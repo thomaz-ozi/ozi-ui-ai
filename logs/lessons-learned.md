@@ -56,6 +56,30 @@ Aprendizados técnicos acumulados. Registre aqui armadilhas descobertas, soluç�
 
 ---
 
+### 2026-06-16 — OziAssets.php não injeta urlBase — SVGs quebram em rotas aninhadas
+
+**Contexto:** `OziAssets.php` + qualquer rota fora da raiz (ex: `/tools/editor`)
+
+**Problema:** `OziConf.init()` define `urlBase` com o default relativo `'./plugins/ozi-ui/'`. Em `/tools/editor`, esse path resolve para `/tools/plugins/ozi-ui/` → 404 em todos os assets (SVGs, CSS). O `ozi.js` não tem esse problema pois auto-detecta o `urlBase` pelo atributo `src` do script tag (sempre absoluto).
+
+**Solução:** Adicionar `OziConf.apply({ core: { urlBase: asset('plugins/ozi-ui') } })` no `$immediateBoot` do `OziAssets.php`, logo após o `OziConf.init()`.
+
+**Armadilha:** Qualquer novo entry point PHP que não carregue `ozi.js` precisa injetar `urlBase` explicitamente. O path relativo só funciona se a página estiver na raiz `/`.
+
+---
+
+### 2026-06-16 — editor-md ausente do $availableScripts do OziAssets.php
+
+**Contexto:** `data-ozi-editor-md` usando `@oziScripts` (Laravel)
+
+**Problema:** `ozi-editor-md.js` não estava na lista `$availableScripts` do `OziAssets.php`. O arquivo nunca era carregado, `registerConverters()` nunca era chamado, e instâncias `[data-ozi-editor-md]` ficavam órfãs silenciosamente — sem erro no console, editor simplesmente não inicializava.
+
+**Solução:** Adicionar `'editor-md' => 'components/ozi-editor/js/ozi-editor-md.js'` no `$availableScripts` logo após `editor`.
+
+**Armadilha:** `OziAssets.php` tem sua própria lista de scripts, independente do `_pluginMap` do `ozi-conf.js`. Qualquer arquivo novo que funciona via `ozi.js` precisa ser adicionado manualmente ao `$availableScripts` para funcionar via `@oziScripts`.
+
+---
+
 ### 2026-06-16 — Deploy KingHost: sem Node/Composer
 
 **Contexto:** Deploy do oziui.com (ozi-ui-website)
