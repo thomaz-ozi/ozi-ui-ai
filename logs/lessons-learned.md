@@ -20,6 +20,20 @@ Aprendizados técnicos acumulados. Registre aqui armadilhas descobertas, soluç�
 
 ---
 
+### 2026-06-20 — urlBase auto-detectado era ignorado por condição errada no bootstrap
+
+**Contexto:** `ozi.js` + `ozi-conf.js` — todos os ambientes (dev-hard, dev-bs, website)
+
+**Problema:** O `ozi.js` já auto-detecta o `_urlBase` correto pelo atributo `src` do próprio `<script>` tag (bloco `[2]`). Porém a condição de fallback no bootstrap era `urlBase === './plugins/ozi-ui/'`, enquanto o default do `ozi-conf.js` era `'/plugins/ozi-ui/'` (sem `./`). A condição nunca batia — o `_urlBase` detectado era sempre descartado, e o path hardcoded do default vencia silenciosamente.
+
+**Solução:**
+1. `ozi-conf.js` — `urlBase: null` nos defaults, sinalizando que o valor deve vir externamente
+2. `ozi.js` — capturar `_userSetUrlBase` antes do `init()` (verifica se o dev passou `core.urlBase` no `_pendingConf`); se não passou, o `_urlBase` auto-detectado sempre vence
+
+**Armadilha:** A falha era silenciosa — o plugin carregava, mas com o path errado dependendo do ambiente. Em `dev-hard` funcionava por coincidência (default `/plugins/ozi-ui/` == path real). Em ambientes com rotas aninhadas ou `@oziScripts`, o conflito aparecia. Sempre que houver uma condição de fallback verificando um string literal de path, confirmar se o default atual ainda corresponde ao literal.
+
+---
+
 ### 2026-06-16 — Arquivos de integração Livewire fora do _pluginMap
 
 **Contexto:** `ozi-select` + integração Livewire
