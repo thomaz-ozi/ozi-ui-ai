@@ -14,7 +14,7 @@
 
 | Repositório | Visibilidade | Alias | Local | Propósito |
 |---|---|---|---|---|
-| `ozi-ui` | público / homologação | `ozi-ui` | `E:/xampp/www/ozi/ozi-ui` | O plugin em si — distribuído via download e Composer |
+| `ozi-ui` | público / homologação | `ozi-core` | `E:/xampp/www/ozi/ozi-ui` | O plugin em si — distribuído via download e Composer |
 | `ozi-ui-ai` | privado | `ozi-ai` | `E:/xampp/www/ozi/ozi-ui-ai` | Experiência da IA — context, logs, prompts, setup |
 | `ozi-ui-website` | privado / produção | `ozi-website` | `E:/xampp/www/ozi/ozi-ui-website` | Website do plugin (oziui.com) |
 | `ozi-ui-docs` | privado | `ozi-docs` | `E:/xampp/www/ozi/ozi-ui-docs` | Documentação interna, changelogs, decisões |
