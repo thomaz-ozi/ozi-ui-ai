@@ -22,6 +22,12 @@
 | `ozi-ui-dev-bs` | privado | `dev-bs` | `E:/xampp/www/ozi/ozi-ui-dev-bs` | Sandbox secundário — Laravel 13+ Livewire 4 + Bootstrap 5 |
 | `ozi-ui-dev-tw` | privado | `dev-tw` | `E:/xampp/www/ozi/ozi-ui-dev-tw` | Sandbox futuro — Laravel 13+ Livewire 4 + Tailwind 4 |
 
+### Projeto host (consumidor em produção)
+
+| Projeto | Local | Stack | Papel |
+|---|---|---|---|
+| **Central RH** | `C:/xampp_lite_8_4/www/centralrh/centralrh12` | Laravel 12 + Livewire 4 + Bootstrap 5, `ozi-ui/core ^1.0` via Composer | Aplicação real que consome o ozi-ui v1 — referência de compatibilidade da migração v2 (inventário: `ozi-ui-docs/horizonte/roadmap/ozi-ui-v2-f0-inventario-centralrh.md`) |
+
 ---
 
 ## Ambiente de Desenvolvimento
