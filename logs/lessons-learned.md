@@ -118,6 +118,30 @@ Aprendizados técnicos acumulados. Registre aqui armadilhas descobertas, soluç�
 
 ---
 
+### 2026-07-04 — Payload legado com chave `source` genérica colide com o `source` do contrato v2
+
+**Contexto:** F2 #6, `ozi-check.js` — payload de `_emit()` usava `source: 'switch'|'group'|'item'` para indicar qual nível da hierarquia disparou a mudança.
+
+**Problema:** O contrato v2 reserva `detail.source` para `'user'|'api'` (distinguir interação humana de chamada programática, usado por adapters Livewire para evitar loop). O `ozi-check` v1 já usava a mesma chave `source` com um significado completamente diferente (nível: switch/group/item). Copiar o payload direto para o `detail` sobrescreveria um pelo outro.
+
+**Solução:** Renomeada a chave original para `level` no `detail` (`{ component, name, value, source: 'user', level: 'switch'|'group'|'item', ... }`), preservando a informação sem colidir com o campo reservado do contrato.
+
+**Armadilha:** Antes de simplesmente repassar um payload v1 para dentro do `detail` do contrato v2, checar se alguma chave do payload original colide semanticamente com `component`/`name`/`value`/`items`/`source` (as reservadas pelo contrato). Migrações futuras (`ozi-search`, `ozi-editor`) devem fazer essa checagem antes de montar o `emit()`.
+
+---
+
+### 2026-07-04 — Evento jQuery customizado (não-DOM) exige shim dedicado, não dá pra só trocar por CustomEvent
+
+**Contexto:** F2 #6, `ozi-check.js` escutava `$(document).on('oziCheck:initFetched', fn)` — um evento **puramente jQuery** (disparado via `$(document).trigger(...)`, não relacionado a nenhum evento DOM nativo), documentado como compat para hosts legados.
+
+**Problema:** Diferente de `ozi:change`/`ozi:toggle-*` (que already são `CustomEvent` nativos com dual-dispatch — dá pra parar de emitir via jQuery e manter só o nativo), este evento **nunca existiu como CustomEvent** — é 100% um mecanismo interno do jQuery. Não existe "versão nativa equivalente" para simplesmente continuar escutando sem jQuery; se um host antigo ainda faz `$(document).trigger('oziCheck:initFetched', [root])`, só um listener registrado via `jQuery(document).on(...)` vai recebê-lo.
+
+**Solução:** Removido o listener do componente (que teria que carregar jQuery só para isso, violando o contrato de camadas). Criado `integrations/adapters/ozi-check-v1-events.shim.js` — arquivo opcional, no-op se jQuery ausente, que escuta o evento legado e delega para `OZI.components.check.refresh()`. Documentado no `description.md` do componente.
+
+**Armadilha:** Ao migrar um componente, distinguir dois tipos de "evento jQuery legado": (1) dual-dispatch de um evento que **também** é `CustomEvent` nativo — aqui basta parar de emitir via jQuery, o shim genérico de `ozi:change` já cobre; (2) evento **exclusivamente jQuery** (custom, sem contraparte `CustomEvent`) — esse exige um shim próprio e específico, não dá pra reaproveitar o shim genérico. `ozi-editor`/`ozi-search`/`ozi-auth` podem ter o mesmo padrão — verificar antes de assumir que "remover jQuery" é só trocar o mecanismo de disparo.
+
+---
+
 ### 2026-07-03 — Aceite de "zero jQuery" mede requests, não só `window.jQuery`
 
 **Contexto:** `public/teste-v2/aceite.html` (+ variante em rota aninhada), Edge headless

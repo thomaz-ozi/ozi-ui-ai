@@ -37,22 +37,23 @@
 2. Decisão #12 (exposição dupla `window.OziX`) — recomendação: manter via shim, remover no corte
 3. Reavaliar `horizonte/roadmap/pluginconf-melhorias.md` contra o contrato
 
-## F2 — Migração dos componentes 🟠 *(5/9 concluídos, 2026-07-04, branch `v2` do dev-hard)*
+## F2 — Migração dos componentes 🟠 *(6/9 concluídos, 2026-07-04, branch `v2` do dev-hard)*
 
 - **#5 `ozi-autocomplete`** ✅ commit `df20083` — reaproveitou todos os padrões do `ozi-select` (`_make`, `_classListOp`, delegação nativa, `nativeElement:true`, `emit()` com `source`, o mesmo shim genérico de compat — nenhum shim novo precisou ser criado). Toast do grupo "unique" migrado para Web Animations API. Aceite dedicado `public/teste-v2/aceite-autocomplete.html`: **27/27 de primeira** (os fixtures já nasceram com `id` + `data-ozi-required="true"` explícito, lições da migração anterior).
+- **#6 `ozi-check`** ✅ commit `57f978d` — motor funcional (sem instâncias OOP), hierarquia switch→group→item + tristate preservados. Achado novo: o payload original usava a chave `source` para indicar o **nível** (switch/group/item) — colidia com o `source` do contrato v2 (`user`/`api`); renomeada para `level`. O evento jQuery customizado `'oziCheck:initFetched'` (não é `CustomEvent`, só existe no mundo jQuery) saiu do componente e virou shim opcional: `integrations/adapters/ozi-check-v1-events.shim.js`. 2 aceites dedicados: `aceite-check.html` (17/17) + `aceite-check-shim.html` (3/3), ambos de primeira.
 
 
 - **#1 `ozi-validate`** ✅ commit `7658f23` (+ `v2.1.0` no commit `efc15fd`, ver #4) — motor 100% nativo (querySelectorAll/closest/classList); adapters ainda-v1 (autocomplete/editor/audio) continuam recebendo o elemento envelopado em jQuery via ponte `_wrapLegacy()` (`guard-ok`); adapters v2 (select) marcam `nativeElement: true` para receber Element puro. Aceite dedicado `public/teste-v2/aceite-validate.html`: 20/20.
 - **#2 `ozi-toggle`** ✅ commit `30da5a7` — slide/fade migrados de `$.animate`/`slideDown`/`slideUp` para **Web Animations API** (`Element.animate`); fim do dual-dispatch (`_emit` só via `OZI.helpers.emit`, sem shim — `ozi:toggle-*` não é consumido no Central RH). Aceite dedicado `public/teste-v2/aceite-toggle.html`: 20/20 (ressalva de teste — ver lessons-learned).
 - **#3 `ozi-loaddata` (+collector)** ✅ commit `ec0096b` — o mais crítico para dados (ZLD); AJAX já era via `fetch`, migração foi DOM/delegação. `zldSafeById` passa a retornar Element nativo (resolve divergência com o alias homônimo do `ozi-helpers`). Não emite CustomEvent próprio. Aceite dedicado `public/teste-v2/aceite-loaddata.html`: 18/18.
 - **#4 `ozi-select`** ✅ commit `efc15fd` — o caso-símbolo (1.106 linhas, 62 jQuery), maior risco de regressão de UX. Motor 100% nativo (DOM/delegação consolidada num único listener por instância); `:visible`→`isVisible()`; fim do dual-dispatch com `source:'user'|'api'` novo no `emit()`. **Criado o primeiro shim de compat**: `integrations/adapters/ozi-change-v1-compat.shim.js` (re-emite `ozi:change` como jQuery posicional `(event, items, instance)` para os 2 consumidores do Central RH — opcional, não carregado pelo boot). Exigiu ajuste mínimo no `ozi-validate` (`v2.1.0`: `registerAdapter({ nativeElement: true })`). 2 aceites dedicados: `aceite-select.html` (28/28) + `aceite-select-shim.html` (5/5).
-- Guard `check-camadas.sh`: `PENDING_V1` em **11 arquivos** (era 17 no início da F1).
-- Docs espelhados em `ozi-ui-docs/dev/{behaviors/ozi-toggle,modules/ozi-loaddata,components/ozi-select,components/ozi-autocomplete}/`; `ozi-validate`/`ozi-loaddata`/`ozi-select`/`ozi-autocomplete` também documentam no próprio `dev-hard` (CHANGELOG/README ao lado do JS).
+- Guard `check-camadas.sh`: `PENDING_V1` em **10 arquivos** (era 17 no início da F1).
+- Docs espelhados em `ozi-ui-docs/dev/{behaviors/ozi-toggle,modules/ozi-loaddata,components/ozi-select,components/ozi-autocomplete,components/ozi-check}/`; `ozi-validate`/`ozi-loaddata`/`ozi-select`/`ozi-autocomplete` também documentam no próprio `dev-hard` (CHANGELOG/README ao lado do JS) — `ozi-check` só tem o espelho em `ozi-ui-docs` (nunca teve README/CHANGELOG próprio).
 
 ## Próximo passo recomendado
 
-**F2 #6 — migrar `ozi-check`** (414 linhas, 25 jQuery) na branch `v2`:
-pequeno, recém-refatorado (v2.2.0), tristate não-trivial. Checklist no projeto consolidado §F2 (sem jQuery; emissão só via `OZI.helpers.emit`; init idempotente + destroy; classes `ozi-*`; i18n completo — hoje incompleto; espelhar doc; página de aceite). Reaproveitar os padrões consolidados (`_make`, `_classListOp`, `nativeElement:true` no adapter, `id` + `data-ozi-required="true"` nos fixtures de teste). Ao concluir: remover do `PENDING_V1` do guard. Depois: search (#7, TreeWalker/paginação já nativos, jQuery é casca).
+**F2 #7 — migrar `ozi-search`** (590 linhas, 41 jQuery) na branch `v2`:
+TreeWalker/paginação já são nativos — jQuery é praticamente casca de DOM/eventos por cima. Checklist no projeto consolidado §F2 (sem jQuery; emissão só via `OZI.helpers.emit`; init idempotente + destroy; classes `ozi-*`; i18n; espelhar doc; página de aceite). Reaproveitar os padrões consolidados (`_make`, `_classListOp`, `nativeElement:true` no adapter se registrar, `id` + `data-ozi-required="true"` nos fixtures de teste, filtrar `"Script error."` opaco nas checagens de erro). Ao concluir: remover do `PENDING_V1` do guard. Depois: auth (#8, único sem CustomEvent hoje).
 
 ## ⚠️ Pendências fora do git do ozi-ui
 
