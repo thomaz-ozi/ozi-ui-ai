@@ -37,10 +37,17 @@
 2. Decisão #12 (exposição dupla `window.OziX`) — recomendação: manter via shim, remover no corte
 3. Reavaliar `horizonte/roadmap/pluginconf-melhorias.md` contra o contrato
 
+## F2 — Migração dos componentes 🟠 *(2/9 concluídos, 2026-07-03, branch `v2` do dev-hard)*
+
+- **#1 `ozi-validate`** ✅ commit `7658f23` — motor 100% nativo (querySelectorAll/closest/classList); adapters ainda-v1 (select/autocomplete/editor/audio) continuam recebendo o elemento envelopado em jQuery via ponte `_wrapLegacy()` (`guard-ok`), removida quando cada um migrar. Aceite dedicado `public/teste-v2/aceite-validate.html`: 20/20.
+- **#2 `ozi-toggle`** ✅ commit `30da5a7` — slide/fade migrados de `$.animate`/`slideDown`/`slideUp` para **Web Animations API** (`Element.animate`); fim do dual-dispatch (`_emit` só via `OZI.helpers.emit`, sem shim — `ozi:toggle-*` não é consumido no Central RH). Aceite dedicado `public/teste-v2/aceite-toggle.html`: 20/20 (ressalva de teste — ver lessons-learned).
+- Guard `check-camadas.sh`: `PENDING_V1` em **15 arquivos** (era 17 no início da F1).
+- Docs espelhados em `ozi-ui-docs/dev/behaviors/ozi-toggle/` (changelog + description); `ozi-validate` documenta no próprio `dev-hard` (CHANGELOG/README ao lado do JS — padrão pré-existente do módulo).
+
 ## Próximo passo recomendado
 
-**F2 #1 — migrar `ozi-validate`** (461 linhas, 11 jQuery) na branch `v2`:
-checklist no projeto consolidado §F2 (sem jQuery; emissão só via `OZI.helpers.emit`; init idempotente + destroy; i18n; espelhar doc; página de aceite "valor DOM ≡ estado Livewire"). Ao concluir: remover do `PENDING_V1` do guard. Depois: toggle (#2, consolida padrão de behavior vanilla).
+**F2 #3 — migrar `ozi-loaddata` (+collector)** (1.263 linhas, 27 jQuery) na branch `v2`:
+crítico para dados (coração do consumo do Central RH — ZLD). jQuery ali é sobretudo AJAX→`fetch`. Checklist no projeto consolidado §F2 (sem jQuery; emissão só via `OZI.helpers.emit`; init idempotente + destroy; i18n; espelhar doc; página de aceite "valor DOM ≡ estado Livewire"). Ao concluir: remover do `PENDING_V1` do guard. Depois: select (#4, caso-símbolo, maior risco).
 
 ## ⚠️ Pendências fora do git do ozi-ui
 
