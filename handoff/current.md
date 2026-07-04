@@ -37,17 +37,18 @@
 2. Decisão #12 (exposição dupla `window.OziX`) — recomendação: manter via shim, remover no corte
 3. Reavaliar `horizonte/roadmap/pluginconf-melhorias.md` contra o contrato
 
-## F2 — Migração dos componentes 🟠 *(2/9 concluídos, 2026-07-03, branch `v2` do dev-hard)*
+## F2 — Migração dos componentes 🟠 *(3/9 concluídos, 2026-07-03, branch `v2` do dev-hard)*
 
 - **#1 `ozi-validate`** ✅ commit `7658f23` — motor 100% nativo (querySelectorAll/closest/classList); adapters ainda-v1 (select/autocomplete/editor/audio) continuam recebendo o elemento envelopado em jQuery via ponte `_wrapLegacy()` (`guard-ok`), removida quando cada um migrar. Aceite dedicado `public/teste-v2/aceite-validate.html`: 20/20.
 - **#2 `ozi-toggle`** ✅ commit `30da5a7` — slide/fade migrados de `$.animate`/`slideDown`/`slideUp` para **Web Animations API** (`Element.animate`); fim do dual-dispatch (`_emit` só via `OZI.helpers.emit`, sem shim — `ozi:toggle-*` não é consumido no Central RH). Aceite dedicado `public/teste-v2/aceite-toggle.html`: 20/20 (ressalva de teste — ver lessons-learned).
-- Guard `check-camadas.sh`: `PENDING_V1` em **15 arquivos** (era 17 no início da F1).
-- Docs espelhados em `ozi-ui-docs/dev/behaviors/ozi-toggle/` (changelog + description); `ozi-validate` documenta no próprio `dev-hard` (CHANGELOG/README ao lado do JS — padrão pré-existente do módulo).
+- **#3 `ozi-loaddata` (+collector)`** ✅ commit `ec0096b` — o mais crítico para dados (ZLD); AJAX já era via `fetch`, migração foi DOM/delegação. `zldSafeById` passa a retornar Element nativo (resolve divergência com o alias homônimo do `ozi-helpers`). Não emite CustomEvent próprio. Aceite dedicado `public/teste-v2/aceite-loaddata.html`: 18/18.
+- Guard `check-camadas.sh`: `PENDING_V1` em **13 arquivos** (era 17 no início da F1).
+- Docs espelhados em `ozi-ui-docs/dev/{behaviors/ozi-toggle,modules/ozi-loaddata}/`; `ozi-validate`/`ozi-loaddata` também documentam no próprio `dev-hard` (CHANGELOG/README ao lado do JS — padrão pré-existente desses módulos).
 
 ## Próximo passo recomendado
 
-**F2 #3 — migrar `ozi-loaddata` (+collector)** (1.263 linhas, 27 jQuery) na branch `v2`:
-crítico para dados (coração do consumo do Central RH — ZLD). jQuery ali é sobretudo AJAX→`fetch`. Checklist no projeto consolidado §F2 (sem jQuery; emissão só via `OZI.helpers.emit`; init idempotente + destroy; i18n; espelhar doc; página de aceite "valor DOM ≡ estado Livewire"). Ao concluir: remover do `PENDING_V1` do guard. Depois: select (#4, caso-símbolo, maior risco).
+**F2 #4 — migrar `ozi-select`** (1.106 linhas, 62 jQuery) na branch `v2`:
+o caso-símbolo da consistência de dados (select2 + `wire:model`) — maior risco de regressão de UX, mas todos os alicerces já estão prontos (helpers dual-accept, emit, validate/loaddata migrados). Checklist no projeto consolidado §F2 (sem jQuery; emissão só via `OZI.helpers.emit`; init idempotente + destroy; classes `ozi-*`; i18n; espelhar doc; shim de compat em `integrations/` se necessário; página de aceite "valor DOM ≡ estado Livewire"). Atenção: `ozi-select` registra adapter no `ozi-validate` — ao migrar, atualizar `_registerAdapter()` para receber Element nativo (a ponte `_wrapLegacy()` do validate deixa de envolver em jQuery assim que o select for o autor da chamada). Ao concluir: remover do `PENDING_V1` do guard. Depois: autocomplete (#5, reaproveita padrões do select).
 
 ## ⚠️ Pendências fora do git do ozi-ui
 

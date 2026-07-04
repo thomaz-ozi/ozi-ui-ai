@@ -82,6 +82,18 @@ Aprendizados técnicos acumulados. Registre aqui armadilhas descobertas, soluç�
 
 ---
 
+### 2026-07-03 — "Script error." opaco no headless é ruído do `file://` + script dinâmico, não um bug do componente
+
+**Contexto:** F2 #3, página de aceite de `ozi-loaddata.js` (`aceite-loaddata.html`)
+
+**Problema:** O aceite reportava um `"Script error."` sem `filename`/`lineno`/`stack` (evento `error` "opaco") logo no boot, antes de qualquer código de teste rodar. Todos os outros 17 checks passavam normalmente, incluindo os que dependiam da mesma lógica supostamente "quebrada" — sinal de que não era uma falha real.
+
+**Solução:** Isolei o problema fora do componente: criei uma página mínima carregando **só** `oziConf({ plugins: ['select'] })` — um plugin v1 que eu nunca toquei nesta migração — e o mesmo `"Script error."` apareceu (3x). Conclusão: é um artefato do próprio mecanismo de carregamento dinâmico de plugins do `ozi.js` (`createElement('script')` + `appendChild`) quando a página é servida via `file://` no headless — o navegador "esconde" detalhes de erros de scripts carregados dinamicamente sob esse protocolo, mesmo sendo mesma origem/mesmo diretório. Ajustei a página de aceite para filtrar especificamente eventos `error` com `message === 'Script error.'` e `filename`/`lineno` vazios, mantendo a checagem de erros reais (que sempre vêm com atribuição completa).
+
+**Armadilha:** Antes de reportar "achei um bug" a partir de um `"Script error."` sem detalhes no headless, isolar a mesma condição num componente **não relacionado** (ou numa página mínima) para confirmar se é ambiente ou código. Toda página de aceite feita a partir daqui em diante deve filtrar esse ruído conhecido (ver `aceite-loaddata.html` para o padrão) em vez de contar como falha ou, pior, tentar "consertar" um código que já está correto.
+
+---
+
 ### 2026-07-03 — Aceite de "zero jQuery" mede requests, não só `window.jQuery`
 
 **Contexto:** `public/teste-v2/aceite.html` (+ variante em rota aninhada), Edge headless
