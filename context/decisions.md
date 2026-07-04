@@ -116,3 +116,20 @@ $(document).on('click.oziCopy', '[data-ozi-copy]', handler);
 **Decisão:** Todo plugin expõe `OZI.components.nome` E `window.OziNome`.
 
 **Por quê:** `OZI.components.nome` é o acesso canônico moderno. `window.OziNome` existe para compat retroativa com código legado e para uso em contextos onde `OZI` pode não estar acessível.
+
+---
+
+## Revisão externa — 2026-06-30
+
+Avaliação de arquitetura feita pelo Claude após revisar `OziAssets.php`, `ozi-integrations-core.js` e `ozi-select.plugin.js` no contexto do ozi-ui-website. Não é uma decisão nova — é uma leitura de fora sobre decisões já tomadas, registrada para referência futura.
+
+**Pontos fortes observados:**
+- A taxonomia `behaviors` (atômico) / `components` (widget completo) / `modules` (orquestração cross-cutting) é uma separação de responsabilidades real, não só organização de pastas — reflete nos bundles de `OziAssets.php` (grupos `auth`/`forms`/`livewire`/`full`).
+- A camada de integrations (decisão #6) é o ponto mais forte do projeto: separar "o widget se registra com um contrato normalizado" (`getValue`/`setValue`/`setOptions`/`destroy`/`reinit`) de "o adapter fala com o framework" é o desenho certo para suportar múltiplos frameworks sem acoplar cada component a cada um.
+- O shim de retrocompat `OziFrameworks → OZI.integrations` com warning de depreciação (em vez de quebrar silenciosamente) mostra preocupação real com versionamento de API pública.
+
+**Trade-off aceito conscientemente:** a arquitetura de namespace global (`window.OZI`) com boot sequence dependente de ordem de script (decisão #7, #4) é inerente à escolha de ser um plugin jQuery — isso implica uma classe inteira de bugs de race condition (documentados em `lessons-learned.md`) que não existiria num design ESM/reativo. Não é um erro de engenharia; é dívida técnica consciente, aceitável enquanto o objetivo for competir no nicho jQuery (ex: como alternativa ao Select2).
+
+**Contexto de maturidade:** a biblioteca `ozi-ui` tem cerca de **4 meses** de existência. Padrões como adapter pattern, plugin registry e shim de depreciação normalmente só aparecem depois de anos de iteração (é o caso de concorrentes como Select2/jQuery UI) — aqui parecem ter sido antecipados desde cedo, não aprendidos por tentativa e erro em produção.
+
+`ozi-loaddata` é o plugin mais antigo da biblioteca e foi parcialmente fragmentado ao longo do tempo — partes dele que hoje são módulos separados (`ozi-validate`, `ozi-actions`, `ozi-suggest`) nasceram dentro dele e foram extraídas depois. Isso explica a decisão #11 (bridge unidirecional `zldConf.zldHooks → OZI.hooks`): `ozi-loaddata` mantém seu próprio sistema de hooks interno porque é anterior à unificação sob o namespace `OZI` — foi integrado via bridge em vez de reescrito do zero.
