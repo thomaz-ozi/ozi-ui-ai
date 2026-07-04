@@ -20,6 +20,56 @@ Aprendizados técnicos acumulados. Registre aqui armadilhas descobertas, soluç�
 
 ---
 
+### 2026-07-03 — Auditar de verdade antes de estimar: o "jQuery no core" eram comentários
+
+**Contexto:** F1 da migração v2 (jQuery → JS puro), dev-hard branch `v2`
+
+**Problema:** A análise estática apontava jQuery no boot do core (`ozi.js`, hooks, loader) — o que dimensionaria a F1 como um refactor pesado do núcleo. Ao inspecionar linha a linha, o boot do `ozi.js` **nunca carregou jQuery** (ele apenas distribui `core/jquery-3.7.1.min.js`; as páginas o incluem por conta própria) e as "1 ocorrência" em hooks/loader eram **comentários**.
+
+**Solução:** O core já estava limpo. O trabalho real da F1 era só **helpers + contrato + verificação** — e a fase encurtou. Feito isso, o aceite passou.
+
+**Armadilha:** `grep`/análise estática conta comentários e strings como "ocorrências". Antes de dimensionar uma fase com base em contagem de matches, confirmar no código se são chamadas reais. Uma auditoria de 10 min mudou o escopo da fase inteira.
+
+---
+
+### 2026-07-03 — Convivência v1↔v2: helpers aceitam Element nativo OU jQuery (dual-accept)
+
+**Contexto:** `ozi-helpers` v1.1.0 (`toElement`/`toElements`)
+
+**Problema:** Durante a F2, componentes v1 (jQuery) e v2 (vanilla) rodam lado a lado. Se os helpers aceitassem só um dos dois tipos, a migração incremental quebraria — todo componente teria que migrar de uma vez.
+
+**Solução:** `toElement()`/`toElements()` normalizam a entrada aceitando **Element nativo, objeto jQuery ou seletor string**. Assim v1 e v2 chamam o mesmo helper sem adaptação, e a migração pode ser feita um componente por vez.
+
+**Armadilha:** Numa migração incremental, a camada compartilhada (helpers) precisa ser **bi-compatível** desde o primeiro passo — senão vira big-bang. `runBatch` ficou depreciado para v2 mas funcional para v1 pelo mesmo motivo.
+
+---
+
+### 2026-07-03 — Contrato de eventos: `emit()` como ponto único + guard de camadas com lista que encolhe
+
+**Contexto:** `docs/ozi-ui-v2-contratos.md`, `OZI.helpers.emit()`, `tools/check-camadas.sh`
+
+**Problema:** Sem disciplina, cada componente emitiria eventos com formato próprio (nomes, payload) e o jQuery vazaria de volta para as camadas já migradas ao longo da F2.
+
+**Solução:**
+1. **`OZI.helpers.emit(el, name, detail)`** = ponto único de emissão. Só `CustomEvent` com `bubbles: true` e payload único em `detail: { component, name, value, items?, source }`; nomes `ozi:*` preservados. Valida o payload quando o log está ativo.
+2. **Guard `check-camadas.sh`**: falha se jQuery aparecer fora de `integrations/`, mantendo uma lista `PENDING_V1` (17 arquivos v1 tolerados) que **encolhe a cada migração** e deve zerar antes do corte v2.
+
+**Armadilha:** Regressão de arquitetura é silenciosa. Um guard executável + uma allowlist decrescente transforma "não use jQuery aqui" em teste que quebra o build — e mede o progresso da migração objetivamente.
+
+---
+
+### 2026-07-03 — Aceite de "zero jQuery" mede requests, não só `window.jQuery`
+
+**Contexto:** `public/teste-v2/aceite.html` (+ variante em rota aninhada), Edge headless
+
+**Problema:** Verificar `window.jQuery === undefined` **não prova** que a página está livre de jQuery — o script pode ter sido requisitado e falhado, ou carregado e limpo depois.
+
+**Solução:** O aceite roda em **Edge headless** (`msedge --headless=new --virtual-time-budget=8000 --dump-dom <url>`) e checa 10 pontos, incluindo **zero requests a jQuery via Performance API** (`performance.getEntriesByType('resource')`), `OZI.isReady`, urlBase auto-detectado, dual-accept dos helpers e o `emit()` borbulhando até o `document` com o payload do contrato. Rodado na raiz E em rota aninhada.
+
+**Armadilha:** Prova de ausência precisa olhar a camada de rede, não só o estado final do `window`. E testar em rota aninhada além da raiz pega o bug clássico de `urlBase` relativo.
+
+---
+
 ### 2026-06-20 — urlBase auto-detectado era ignorado por condição errada no bootstrap
 
 **Contexto:** `ozi.js` + `ozi-conf.js` — todos os ambientes (dev-hard, dev-bs, website)

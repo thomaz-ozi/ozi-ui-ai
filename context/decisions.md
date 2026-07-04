@@ -111,6 +111,16 @@ $(document).on('click.oziCopy', '[data-ozi-copy]', handler);
 
 ---
 
+## #13 — Reset global não faz normalização visual
+
+**Decisão:** O `ozi-reset.css` (v1.0.2) contém apenas resets **estruturais** (box-sizing, svg). Os blocos de normalização visual (buttons, inputs, lists) foram removidos.
+
+**Por quê:** O seletor genérico `[class*="ozi-"]` capturava elementos do app dentro dos componentes e conflitava com os temas (Bootstrap 5 no Central RH — hotfix aplicado em produção e depois oficializado no fonte). Normalização visual é papel do **tema** (`tokens.css`/`overrides.css`), nunca de reset global.
+
+**Regra para a v2:** componente que precisar de aparência neutra em button/input/list declara isso nas suas classes próprias `ozi-*` (CSS do próprio componente), não em reset compartilhado.
+
+---
+
 ## #12 — Exposição dupla de API
 
 **Decisão:** Todo plugin expõe `OZI.components.nome` E `window.OziNome`.
