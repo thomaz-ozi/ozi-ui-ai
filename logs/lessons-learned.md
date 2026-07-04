@@ -94,6 +94,30 @@ Aprendizados técnicos acumulados. Registre aqui armadilhas descobertas, soluç�
 
 ---
 
+### 2026-07-03 — Adapter que já migrou precisa de opt-out explícito na ponte legada (`nativeElement: true`)
+
+**Contexto:** F2 #4, `ozi-select.js` registrando adapter no `ozi-validate` (já migrado na F2 #1)
+
+**Problema:** O `ozi-validate` v2.0.0 tinha `_wrapLegacy()` que envelopa **todo** elemento em jQuery antes de chamar qualquer adapter externo (ponte para os componentes ainda-v1: autocomplete/editor/audio). Ao migrar `ozi-select` para JS puro, seu adapter passou a esperar `Element` nativo — mas a ponte continuaria envelopando em jQuery, quebrando silenciosamente o adapter do select (`el.hasAttribute is not a function` num objeto jQuery).
+
+**Solução:** Adicionada uma flag opcional no contrato de `registerAdapter()`: `{ name, nativeElement: true, match, isValid, getValue, setState }`. `_wrapLegacy()` virou `_adapterArg(adapter, el)` — só envelopa em jQuery se o adapter **não** declarar `nativeElement: true`. Adapters antigos continuam intactos (comportamento padrão inalterado); o select marca a flag e recebe `Element` puro.
+
+**Armadilha:** Numa migração incremental onde um componente migrado (A) é **consumido** por outro já migrado (B) através de um registry/callback, a ponte de transição em A precisa de um mecanismo de opt-out por registro — não dá pra assumir "quem chama decide o formato" quando várias gerações (v1 e v2) competem pelo mesmo callback. Vale a mesma lição para qualquer módulo com padrão de adapter/plugin registry (`ozi-actions`, `ozi-integrations`) se algum consumidor migrar antes do próprio módulo.
+
+---
+
+### 2026-07-03 — `_parseBool()` não reconhece atributo booleano "vazio" em elementos não-nativos
+
+**Contexto:** F2 #4, página de aceite `aceite-select.html` — testando que `ozi-validate.container()` marca um `ozi-select` obrigatório vazio como inválido
+
+**Problema:** Escrevi o fixture de teste como `<div data-ozi-select="x" data-ozi-select-required data-ozi-required>` (atributo "presença apenas", sem valor) esperando que funcionasse como `required` HTML nativo. `container()` continuava retornando `isValid: true` mesmo com o campo vazio. Investigando, `_parseBool(el, attr, fallback)` tem dois caminhos: para atributos da lista `['required','disabled','checked','multiple','readonly']` ele lê a **propriedade IDL nativa** (`el[attr] === true`) — que não existe em elementos não-form como `<div>` (sempre `undefined`); para qualquer outro atributo (como `data-ozi-required`) ele exige que o **valor literal** seja `'true'`, `'1'`, `'required'` ou igual ao próprio nome do atributo — um atributo escrito sem valor (`data-ozi-required`) tem `getAttribute()` retornando `""` (string vazia), que não bate em nenhum desses casos e portanto avalia como `false`.
+
+**Solução:** Não é bug — confirmei que essa é a **mesma lógica exata da v1** (só trocando `$el.prop`/`$el.attr` por `el[attr]`/`el.getAttribute`). Corrigi o fixture para `data-ozi-required="true"` (valor explícito). Também descobri, no mesmo teste, que o `container()` só coleta um campo se ele tiver `name` **ou** `id` (`if (!name) return;`) — a raiz do `ozi-select` não ganha nenhum dos dois automaticamente, então o dev precisa dar um `id` (convenção comum: igual à chave do `data-ozi-select`) para o adapter ser exercitado via validação de formulário inteiro.
+
+**Armadilha:** Ao escrever fixtures de teste (ou documentação) para atributos `data-ozi-*` booleanos consumidos por `_parseBool()`, sempre usar valor explícito (`="true"`), nunca a forma "presença apenas" do HTML nativo — essa lib não trata os dois formatos como equivalentes fora da lista de booleanos nativos. E lembrar que qualquer componente customizado (`<div data-ozi-*>`) que queira participar da validação de formulário via `container()` precisa de `id` ou `name` no elemento raiz.
+
+---
+
 ### 2026-07-03 — Aceite de "zero jQuery" mede requests, não só `window.jQuery`
 
 **Contexto:** `public/teste-v2/aceite.html` (+ variante em rota aninhada), Edge headless
