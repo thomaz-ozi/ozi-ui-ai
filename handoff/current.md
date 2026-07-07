@@ -1,5 +1,5 @@
 # OZI-UI — Handoff de Sessão
-**idDoc:** handoff-current | **Versão:** 1.0 | **Data:** 2026-07-03 (máquina: trabalho C:)
+**idDoc:** handoff-current | **Versão:** 1.1 | **Data:** 2026-07-06 (sincroniza o handoff com `decisions.md`/`README` v2 de 2026-07-05 — F3/F4/F5-A estavam concluídas mas não refletidas aqui)
 
 > Arquivo gravado pela IA ao encerrar cada sessão de trabalho no ozi-ui.
 > Lido no início da sessão seguinte (casa ou trabalho).
@@ -18,10 +18,10 @@
 - Central RH registrado: `www/centralrh/centralrh12` (Laravel 12 + LW4 + BS5, `ozi-ui/core ^1.0`)
 - Inventário: só `ozi:change` é escutado (jQuery posicional em **2 arquivos**: `candidate-list.blade.php:754`, `profile/edit.blade.php:388`); `ozi:auth-*` não é consumido (shim dispensável); ZLD = maior consumo (55+ urls, alimenta modal/offcanvas)
 - Release drift resolvido: v1.0.7 já existia no Packagist → `composer update` no Central RH (lock 1.0.5→1.0.7) + publicado sincronizado (preservado depois oficializado o hotfix do reset)
-- **Escopo fechado:** 9 componentes (select, autocomplete, loaddata, validate, auth, editor, search, check, toggle) + 3 módulos internos; **descontinuados** audio/copy/paste (uso zero)
+- **Escopo fechado:** 9 componentes (select, autocomplete, loaddata, validate, auth, editor, search, check, toggle) + 3 módulos internos; **descontinuados** audio/copy/paste (uso zero) — *nota (2026-07-05): `ozi-audio` foi reincluído no escopo e migrado (decisão #17); descontinuados restam só `ozi-copy`/`ozi-paste`*
 - **Decisão #13** (nova em `context/decisions.md`): reset global só estrutural (box-sizing+svg) — `ozi-reset.css` v1.0.2
 - **Tags `v1-final` publicadas de verdade (2026-07-03, correção pós-auditoria)**: `ozi-ui` (pacote/ozi-core, homologação-produção) em `b5b218c` + branch `v2` criada a partir do `master`, ambas no `origin`; `ozi-ui-dev-hard` em `02893ae`, no `origin`. *A sessão anterior tinha registrado esse item como concluído, mas nem a tag nem a branch `v2` do pacote existiam — só foram criadas/pushadas agora.*
-- Unificação `2.0.0-dev`: **adiada** para pós-testes de ambiente (decisão do arquiteto); trabalho permanece no dev-hard
+- Unificação `2.0.0-dev`: **descartada** (decisão #16, 2026-07-05) — versionamento passou a ser **major +1 por plugin**, não versão única; trabalho permanece no dev-hard
 - Boot duplo no `app.blade.php` do Central RH: pendente (tarefa do fluxo centralrh; 8 views incluem `footer-vendor-scripts` direto, 4 via `x-app-layout` = footer em dobro)
 
 ## F1 — ~80% concluída ✅ (2026-07-03, branch `v2` do dev-hard, commit `0865333`)
@@ -37,15 +37,16 @@
 2. Decisão #12 (exposição dupla `window.OziX`) — recomendação: manter via shim, remover no corte
 3. Reavaliar `horizonte/roadmap/pluginconf-melhorias.md` contra o contrato
 
-## F2 — Migração ✅ **COMPLETA (9 componentes + 3 módulos, 2026-07-04, branch `v2`)**
+## F2 — Migração ✅ **COMPLETA (10 componentes + 3 módulos, 2026-07-05, branch `v2`)**
 
-> **F2 fechada (2026-07-04):** os 9 componentes E os 3 módulos internos do escopo v2 estão em JS puro (zero jQuery). Guard verde (**3 pendentes — só descontinuados**). Varredura de regressão: todos os aceites PASSOU; consumidores (select/autocomplete/loaddata) revalidados após a migração dos módulos-dep. Dívida #12 (suggest/actions) **resolvida**.
+> **F2 fechada (2026-07-05):** os 10 componentes E os 3 módulos internos do escopo v2 estão em JS puro (zero jQuery). `ozi-audio` v4.0.0 (reincluído pela decisão #17) foi o 10º e fechou a fase — aceite headless 26/26 (via CDP, `MediaRecorder`/`getUserMedia` stubados). Guard verde (**2 pendentes — só descontinuados `ozi-copy`/`ozi-paste`**). Varredura de regressão: todos os aceites PASSOU; consumidores (select/autocomplete/loaddata) revalidados após a migração dos módulos-dep. Dívida #12 (suggest/actions) **resolvida**.
 
 | Item | Status | jQuery | Aceite |
 |---|---|---|---|
 | #1 validate · #2 toggle · #3 loaddata · #4 select | ✅ | 0 | 20/20 · 20/20 · 18/18 · 28/28+5/5 |
 | #5 autocomplete · #6 check · #7 search | ✅ | 0 | 27/27 · 17/17+3/3 · 29/29 |
 | #8 auth · #9 editor(+md) | ✅ | 0 | 31/31 · 30/30+15/15 |
+| #10 audio (v4.0.0, 2026-07-05) | ✅ | 0 | 26/26 (headless CDP) |
 | módulo password-rules · suggest · actions | ✅ | 0 | (já vanilla) · isolado · 17/17 |
 
 > **Nota da migração dos módulos (2026-07-04):** `ozi-suggest` v2.0.0 (3 jQuery triviais → querySelector/getAttribute/readyState). `ozi-actions` v2.0.0 (adapters de tema em DOM nativo; **removido o fallback `$(el).modal()` BS4** — modal/offcanvas usam SÓ a API nativa `window.bootstrap.Modal/Offcanvas`; toast default troca `$.fadeOut` por transição de opacidade). Aceites isolados novos: `aceite-suggest.html`, `aceite-actions.html`.
@@ -64,24 +65,41 @@
 - **#2 `ozi-toggle`** ✅ commit `30da5a7` — slide/fade migrados de `$.animate`/`slideDown`/`slideUp` para **Web Animations API** (`Element.animate`); fim do dual-dispatch (`_emit` só via `OZI.helpers.emit`, sem shim — `ozi:toggle-*` não é consumido no Central RH). Aceite dedicado `public/teste-v2/aceite-toggle.html`: 20/20 (ressalva de teste — ver lessons-learned).
 - **#3 `ozi-loaddata` (+collector)** ✅ commit `ec0096b` — o mais crítico para dados (ZLD); AJAX já era via `fetch`, migração foi DOM/delegação. `zldSafeById` passa a retornar Element nativo (resolve divergência com o alias homônimo do `ozi-helpers`). Não emite CustomEvent próprio. Aceite dedicado `public/teste-v2/aceite-loaddata.html`: 18/18.
 - **#4 `ozi-select`** ✅ commit `efc15fd` — o caso-símbolo (1.106 linhas, 62 jQuery), maior risco de regressão de UX. Motor 100% nativo (DOM/delegação consolidada num único listener por instância); `:visible`→`isVisible()`; fim do dual-dispatch com `source:'user'|'api'` novo no `emit()`. **Criado o primeiro shim de compat**: `integrations/adapters/ozi-change-v1-compat.shim.js` (re-emite `ozi:change` como jQuery posicional `(event, items, instance)` para os 2 consumidores do Central RH — opcional, não carregado pelo boot). Exigiu ajuste mínimo no `ozi-validate` (`v2.1.0`: `registerAdapter({ nativeElement: true })`). 2 aceites dedicados: `aceite-select.html` (28/28) + `aceite-select-shim.html` (5/5).
-- Guard `check-camadas.sh`: `PENDING_V1` em **3 arquivos** (era 17 no início da F1). Restam **APENAS os descontinuados** — `ozi-audio`, `ozi-copy`, `ozi-paste` (não entram na v2; seguem no guard até a decisão formal de arquivamento no corte F5). **Todo o escopo v2 está fora do guard.**
-- Docs espelhados em `ozi-ui-docs/dev/` para todos os 9 migrados (description.md + changelog.md com a v4/v2 de cada, incluindo editor + editor-md).
+- Guard `check-camadas.sh`: `PENDING_V1` em **2 arquivos** (era 17 no início da F1; `ozi-audio` saiu ao ser migrado em 2026-07-05). Restam **APENAS os descontinuados** — `ozi-copy`, `ozi-paste` (não entram na v2; seguem no guard até o arquivamento formal no corte F5). **Todo o escopo v2 está fora do guard.**
+- Docs espelhados em `ozi-ui-docs/dev/` para todos os 10 migrados (description.md + changelog.md com a v4/v2 de cada, incluindo editor + editor-md e audio v4.0.0).
+
+## F3 — Temas/CSS ✅ **CONCLUÍDA (2026-07-05, decisão #19)**
+
+- **Tema = dados, nunca código:** cada tema são 4 arquivos em `themes/{tema}/` — `tokens.css` (variáveis `--ozi-*`; `default` é a fonte única de fallbacks), `overrides.css` (estiliza classes `ozi-*` **só com tokens**), `dark.css` (remapeia tokens via `[data-ozi-theme="dark"]` **e** `@media prefers-color-scheme`), `classmap.js` (tokens → classes do framework).
+- Criado `themes/tailwind/overrides.css` (**única lacuna estrutural** do plano); `tailwind/dark.css` → v1.0.1 (bloco `@media` que estava incompleto); `_template/` reestruturado nos 4 arquivos + README.
+- **Validado:** o **mesmo build JS** serve os 3 temas trocando só `oziConf({ theme })`. Aceite `aceite-temas.html` **14/14** (overrides tailwind aplicado + classMap troca em runtime).
+- ⚠️ Armadilha registrada (A3): os DOIS blocos do `dark.css` (atributo + `@media`) devem ter os MESMOS remapeamentos — o do tailwind havia divergido, corrigido aqui.
+
+## F4 — Integrações ✅ **CONCLUÍDA (2026-07-05, decisão #20)**
+
+- Adapter Livewire `integrations/adapters/ozi-livewire.adapter.js` → **v2.0.0**, dois modos:
+  - **A (preferido):** `data-ozi-livewire-native` → seta o valor e dispara `input`+`change` nativos no input `wire:model` (o Livewire trata pela própria máquina, respeitando `.live`/`.debounce`/`.lazy` — resposta ao "timing/debounce" do roadmap).
+  - **B (fallback):** `data-ozi-livewire-model` → `component.set()`.
+- **Anti-loop pelo contrato:** ignora `e.detail.source === 'api'` (mudança programática) — exatamente o que o campo `source` do contrato v2 (#15) existe para permitir.
+- **Re-init pós-morph = `ozi-hooks`** (fontes `livewire3`/`livewire4` com guard entre os formatos de `commit`), nunca o adapter; **não** instalar `MutationObserver` (regra R5). Bridge `zldHooks→OZI.hooks` unidirecional, **marcada para remoção no corte** (F5).
+- Substitutos dos behaviors descontinuados: **receitas Alpine** copy/paste (`ozi-ui-docs/dev/_meta/receitas-alpine.md`) — resolvem a dívida técnica #11.
+- Aceite `aceite-livewire.html` **9/9** (Livewire simulado, headless).
+- *Diferido para a leva do pacote:* revisão do `OziAssets.php` (vive em `ozi-ui/src/`).
+
+## F5-A — Documentação ✅ **CONCLUÍDA (2026-07-05)**
+
+- Guia de migração v1→v2 (`ozi-ui-docs/dev/_meta/guia-migracao-v1-v2.md`) — breaking changes, antes/depois.
+- Contrato v2 oficial (`ozi-ui-docs/dev/_meta/contrato-v2.md`) — camadas + eventos (§emit, §source).
+- Regras para a IA (`ozi-ui-ai/context/regras-v2.md`) — R1–R14 + armadilhas A1–A5.
 
 ## Próximo passo recomendado
 
-**🎉 FASE 2 FECHADA** — todo o escopo v2 (9 componentes + 3 módulos) em JS puro, guard só com descontinuados, todos os aceites verdes. Consolidação/revisão feita; dívidas #13/#14 seguem abertas (baixa prioridade), #12 resolvida.
+**→ F5-B — Piloto + corte `2.0.0`** (ponto de não-retorno; **só depende do pacote sincronizado**):
+- **Antes:** executar a leva de sincronização entre repos (decisão #18, "uma coisa de cada vez"): (1) `ozi-ai` + `dev-hard` + `ozi-docs` → (2) `dev-bs` → (3) `dev-tw` + `ozi-core`/`ozi-ui`. Incluir aí a revisão do `OziAssets.php` (diferida na F4).
+- **Piloto no Central RH:** 2–3 páginas v2 lado-a-lado com v1; resolver o **boot duplo** no `app.blade.php`; migrar os 2 `x-ui.select2` + os **2 pontos de `ozi:change` jQuery-posicional** (`candidate-list.blade.php:754`, `profile/edit.blade.php:388`).
+- **Corte:** remover shims/aliases `zld`, publicar `2.0.0` (versionamento **major +1 por plugin**, decisão #16), arquivar v1, mover o projeto para `genesis/`. Ponto de não-retorno só aqui.
 
-**→ F3 — Temas/CSS** (próxima fase; baixa dificuldade, paralelizável):
-- `tokens.css` como **fonte única** de variáveis por tema (default/bootstrap5/tailwind).
-- Criar `themes/tailwind/overrides.css` (única lacuna estrutural identificada no plano).
-- Revisar `dark.css` dos 3 temas.
-- Validar: o **mesmo build JS** serve os 3 temas trocando só `oziConf({ theme })` — os componentes já usam `_classMap`/tokens, então isso deve "só funcionar"; a F3 confirma e preenche lacunas de CSS.
-- Atualizar `themes/_template/` como guia de tema novo.
-- Arquivos-base: `public/plugins/ozi-ui/themes/{default,bootstrap5,tailwind}/{tokens,overrides,dark}.css` + `classmap.js`.
-
-**Fases seguintes:**
-- **F4 — Integrações:** adapter Livewire (`ozi:change`→`wire:model`, timing/debounce); guard LW3 vs LW4; `ozi-hooks` como re-init oficial.
-- **F5 — Docs/piloto/corte:** piloto no Central RH (2–3 páginas v2 lado-a-lado com v1), boot duplo, migrar os 2 `x-ui.select2` + os 2 pontos de `ozi:change` jQuery-posicional, corte (remover shims/aliases zld, publicar 2.0.0, arquivar v1, mover projeto p/ `genesis/`). Ponto de não-retorno só aqui.
+**Dívidas técnicas:** #11 (receitas Alpine, F4) e #12 (suggest/actions, F2) **resolvidas**; #13/#14 seguem abertas (baixa prioridade).
 
 ## ⚠️ Pendências fora do git do ozi-ui
 

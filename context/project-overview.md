@@ -1,12 +1,25 @@
 # Project Overview — OZI-UI
 
-**Última atualização:** 2026-06-16
+**Última atualização:** 2026-07-05
 
 ---
 
 ## O que é
 
-**ozi-ui** é um plugin jQuery/JS distribuído via Composer e download direto. Fornece components, behaviors, modules e um core configurável compatível com qualquer stack PHP (vanilla, Laravel, etc.) e os principais frameworks CSS (Bootstrap 5, Tailwind 4, ou tema próprio).
+**ozi-ui** é um plugin JS distribuído via Composer e download direto. Fornece components, behaviors, modules e um core configurável compatível com qualquer stack PHP (vanilla, Laravel, etc.) e os principais frameworks CSS (Bootstrap 5, Tailwind 4, ou tema próprio).
+
+- **v1** (tag `v1-final`, em produção no Central RH): plugin **jQuery/JS**.
+- **v2** (branch `v2` do `dev-hard`): **JS puro, zero dependência de terceiros** — jQuery só em `integrations/` (shims), visual só em `themes/`.
+
+## Estado da migração v2 (JS puro)
+
+> **F0 ✅ · F1 ✅ · F2 ✅ (10/10) · F3 ✅ (temas) · F4 ✅ (integrações) · F5-A (doc) ✅ · F5-B pendente** (2026-07-05).
+> **F4:** adapter Livewire → **v2.0.0** — `ozi:change → wire:model` via dispatch nativo `input`/`change` (modo A, respeita `.live`/`.debounce`/`.lazy`), `component.set()` (modo B) fallback; **guard por `e.detail.source==='api'`** evita o loop wire:model→setValue→ozi:change→set (contrato §1.3); aceite `aceite-livewire.html` 9/9. `ozi-hooks` v1.0.2 documentado como re-init oficial (LW3/LW4 com guard de formato de `commit`); bridge `zldHooks→OZI.hooks` unidirecional (marcada p/ remoção no corte); receitas Alpine copy/paste em `dev/_meta/receitas-alpine.md` (resolve dívida #11). Diferido p/ a leva do pacote: revisão do `OziAssets.php` (vive em `ozi-ui/src/`).
+> 10 componentes de UI + 3 módulos internos migrados para JS puro no `ozi-ui-dev-hard` (branch `v2`). `ozi-audio` v4.0.0 fechou a F2 (reincluído revertendo a descontinuação da F0; aceite headless 26/26 via CDP). **F3 (temas):** criado `themes/tailwind/overrides.css` (única lacuna estrutural), `tailwind/dark.css`→v1.0.1 (`@media` completado), `_template/` reestruturado em 4 arquivos + README; validado que o mesmo build JS serve os 3 temas trocando só `oziConf({theme})` (aceite `aceite-temas.html` 14/14). O pacote distribuível `ozi-ui` ainda é placeholder v1.0.7 (sincroniza no 1º release v2).
+>
+> **Versionamento — major +1 por plugin** (não versão única): `ozi.js` (índice da geração) 1.0.7→**2.0.0**, `ozi-conf`→**3.0.0**, loaddata→5.0.0, select→6.0.0, autocomplete/editor/auth/search/**audio**→4.0.0, check/toggle→3.0.0, validate/actions/suggest→2.x, helpers→1.1.0. Descontinuados (uso zero): `ozi-copy`, `ozi-paste`.
+>
+> **Ordem de sync entre repos (decisão 2026-07-05, "uma coisa de cada vez"):** (1) `ozi-ai` + `dev-hard` + `ozi-docs` → (2) `dev-bs` → (3) `dev-tw` + `ozi-core`/`ozi-ui`. Detalhe: `ozi-ui-docs/horizonte/roadmap/ozi-ui-v2-projeto-implementacao.md`.
 
 ---
 

@@ -18,15 +18,22 @@ ozi-ui-ai/
 ├── context/
 │   ├── project-overview.md     ← repositórios, ambientes, aliases, fluxo
 │   ├── stack.md                ← stack técnica, arquitetura, convenções
-│   └── decisions.md            ← decisões arquiteturais com justificativas
+│   ├── decisions.md            ← decisões arquiteturais com justificativas (#1–#20)
+│   ├── regras-v2.md            ← 🆕 vocabulário/regras da IA no v2 (R1 "usar ozi-select"…)
+│   └── aliases.md              ← atalhos dos repositórios
 ├── prompts/
 │   ├── nova-sessao.md          ← iniciar qualquer sessão com contexto completo
 │   ├── novo-componente.md      ← criar componente seguindo padrões do plugin
 │   ├── novo-behavior.md        ← criar behavior com lifecycle correto
 │   ├── novo-modulo.md          ← criar módulo com estrutura do plugin
+│   ├── novo-lang.md            ← adicionar/ajustar dicionário i18n de um plugin
 │   ├── novo-tema.md            ← criar/ajustar variante de tema
 │   ├── integracao-livewire.md  ← implementar/debugar integração Livewire 3/4
-│   └── review-plugin.md        ← checklist de review antes de publicar
+│   ├── debug-plugin.md         ← investigar bug num plugin do ozi-ui
+│   ├── review-plugin.md        ← checklist de review antes de publicar
+│   └── sincronizar.md          ← sincronizar código/doc entre os repositórios
+├── handoff/
+│   └── current.md              ← estado de fim de sessão (lido no início da próxima)
 └── logs/
     └── lessons-learned.md      ← aprendizados técnicos acumulados
 ```

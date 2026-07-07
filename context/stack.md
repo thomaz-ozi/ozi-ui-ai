@@ -1,12 +1,14 @@
 # Stack — OZI-UI
 
+> **v2 (JS puro):** F0/F1/F2 concluídas — core, modules, components e behaviors **sem jQuery**. jQuery só sobrevive em `integrations/` (shims de compat) e como arquivo distribuído. O que mudou vs. a descrição abaixo (que reflete a v1): (1) o padrão IIFE não recebe mais `$`; (2) boot via `readyState`/`DOMContentLoaded` nativo, não `$(function(){})`; (3) emissão de eventos só por `OZI.helpers.emit()` (CustomEvent, `bubbles:true`, `detail: { component, name, value, items?, source }`), fim do dual-dispatch; (4) estado por-elemento em `WeakMap`/`WeakSet`, não `$.data()`.
+
 ---
 
 ## Linguagens e Runtime
 
 | Camada | Tecnologia |
 |---|---|
-| Plugin (lógica) | JavaScript (ES5-compatible, jQuery 3.x) |
+| Plugin (lógica) | JavaScript — **v2: puro/vanilla, zero deps**; v1: ES5-compatible + jQuery 3.x |
 | Distribuição | PHP / Composer (`OziAssets.php` para Laravel) |
 | Desenvolvimento | XAMPP PHP 8.4.6, MariaDB 11.4 |
 | Sandboxes avançados | Laravel 13+ com Livewire 4 |
@@ -83,7 +85,7 @@ OziConf.init() + aplica oziConf() pendentes
 loader.loadPlugins() — carrega na ordem: validate → actions → suggest → password-rules → loaddata
                                          → select → autocomplete → editor → editor-md
                                          → audio → auth → check → search
-                                         → copy → paste → toggle
+                                         → toggle
     ↓
 _bridgeHooks() — conecta zldConf.zldHooks → OZI.hooks (unidirecional)
     ↓
