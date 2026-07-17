@@ -116,12 +116,15 @@
 - Contrato v2 oficial (`ozi-ui-docs/dev/_meta/contrato-v2.md`) — camadas + eventos (§emit, §source).
 - Regras para a IA (`ozi-ui-ai/context/regras-v2.md`) — R1–R14 + armadilhas A1–A5.
 
-## Próximo passo recomendado
+## Próximo passo recomendado — **continuação NA CASA (E:)** (decisão do usuário, 2026-07-17)
 
-**→ F5-B — Piloto no Central RH** (pacote já sincronizado ✅, ver sessão 2026-07-17 no topo):
-- **Piloto:** 2–3 páginas v2 lado-a-lado com v1 (consumir a branch `v2` do pacote — `dev-v2` no composer ou copiar `public/plugins/`); resolver o **boot duplo** (causa raiz: `@oziScripts` + `ozi.js` no footer — escolher UM); migrar os **2 pontos de `ozi:change` jQuery-posicional** (`candidate-list.blade.php:754`, `profile/edit.blade.php:388` — ou carregar o grupo `shims-v1` do `@oziScripts`); limpar o workaround de re-init em `revenda/empresa/form.blade.php`. ⚠️ Não misturar com o diff RD uncommitted do host.
-- **Na máquina de casa (E:):** sincronizar `dev-bs` e `dev-tw` (decisão #18 — não existem na máquina de trabalho).
-- **Corte:** remover shims/aliases `zld`, publicar `2.0.0` (versionamento **major +1 por plugin**, decisão #16), arquivar v1, mover o projeto para `genesis/`. Ponto de não-retorno só aqui.
+**Ao chegar na casa, primeiro `git pull` nos repos atualizados hoje:** `ozi-ui` (branch **`v2`**, `af0b52f`), `ozi-ui-docs` (`f3acce5`), `ozi-ui-ai` (`03a033b`). O dev-hard não mudou hoje.
+
+**→ F5-B na casa** (pacote já sincronizado ✅, ver sessão 2026-07-17 no topo):
+1. **Sincronizar `dev-bs` e `dev-tw`** (decisão #18 — vivem só na casa): copiar `public/plugins/ozi-ui` da branch `v2` do pacote para `public/` e `vendor/ozi-ui/core/...` (checklist do `prompts/sincronizar.md`, seção 3).
+2. **Piloto no Central RH** (na casa: `E:/xampp/www/centralrh/centralrh12`): 2–3 páginas v2 lado-a-lado com v1 (consumir a branch `v2` do pacote — `dev-v2` no composer ou copiar `public/plugins/`); resolver o **boot duplo** (causa raiz: `@oziScripts` + `ozi.js` no footer — escolher UM); migrar os **2 pontos de `ozi:change` jQuery-posicional** (`candidate-list.blade.php:754`, `profile/edit.blade.php:388` — ou carregar o grupo `shims-v1` do `@oziScripts`); limpar o workaround de re-init em `revenda/empresa/form.blade.php`.
+   - ⚠️ O diff RD uncommitted do host está só na máquina de TRABALHO (C:) — antes do piloto na casa, conferir se o `centralrh12` de lá está atualizado com o remoto (o inventário da pré-verificação foi feito no working tree do C:).
+3. **Corte:** remover shims/aliases `zld`, publicar `2.0.0` (versionamento **major +1 por plugin**, decisão #16), arquivar v1, mover o projeto para `genesis/`. Ponto de não-retorno só aqui.
 
 **Dívidas técnicas:** #11 (receitas Alpine, F4) e #12 (suggest/actions, F2) **resolvidas**; #13/#14 seguem abertas (baixa prioridade).
 
