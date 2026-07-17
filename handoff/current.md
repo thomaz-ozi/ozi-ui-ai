@@ -1,8 +1,32 @@
 # OZI-UI — Handoff de Sessão
-**idDoc:** handoff-current | **Versão:** 1.1 | **Data:** 2026-07-06 (sincroniza o handoff com `decisions.md`/`README` v2 de 2026-07-05 — F3/F4/F5-A estavam concluídas mas não refletidas aqui)
+**idDoc:** handoff-current | **Versão:** 1.2 | **Data:** 2026-07-17 (F5-B iniciada: docs de fases revisados/publicados + pacote sincronizado + pré-verificação do piloto no Central RH)
 
 > Arquivo gravado pela IA ao encerrar cada sessão de trabalho no ozi-ui.
 > Lido no início da sessão seguinte (casa ou trabalho).
+
+---
+
+# SESSÃO 2026-07-17 (trabalho/C:) — F5-B iniciada
+
+## 1. Revisão final dos docs de fases (publicada)
+
+- `fases-implantacao-v2.md` reescrito em markdown válido + linha #10 audio na tabela F2 (dizia 10/10 mas listava 9); `ozi-ui-v2-projeto-implementacao.md` anotado (audio reincluído na linha histórica F0, "12 decisões"→época, links cross-repo viraram referência textual). **Todos os fatos verificados contra o código do dev-hard antes** (armadilha A1): versões de cabeçalho OK, guard verde (2 pendentes = copy/paste), 18 aceites presentes. Commits `69a2731` + `f3acce5` no ozi-docs.
+
+## 2. Pacote sincronizado ✅ (pré-requisito do piloto)
+
+- **Branch `v2` do `ozi-ui` = espelho byte-idêntico do dev-hard `a2e2013`** (`diff -rq` vazio; guard `check-camadas.sh` verde rodado NA árvore do pacote). Commit **`af0b52f`** pushado.
+- `composer.json` → **`2.0.0-dev`** na branch (release `2.0.0` só no corte); keywords: `jquery` → `vanilla-js`/`livewire`.
+- **`OziAssets.php` revisado** (fecha os diferidos F1/F4): copy/paste fora dos defaults; shims v1 como chaves opt-in + grupo **`shims-v1`** (removível no corte); `ozi-lang.js` no HEAD (com `OZI.lang`+`init()` no immediateBoot, espelhando o `ozi.js`); css de check/toggle que faltavam; listas na load order documentada; injeção de `urlBase` preservada.
+- **`OziCheckCommand` reescrito** (fecha o item F1 "fonte única"): estava PODRE (paths v0.x, `ozi-addons/`). Agora `php artisan ozi:check` parseia o `_pluginMap` do `ozi-conf.js` publicado e **falha em qualquer deriva** com o OziAssets (2 sentidos; exceções documentadas: copy/paste descontinuados, `integrations/adapters/`+`shared/`, e `validate.css` — o `css:null` do map é INTENCIONAL, o css é visual do tema default, opt-in). Validado standalone: 37 paths map = 37 assets, zero deriva. `php -l` limpo.
+- **Decisão #18 adaptada:** dev-bs/dev-tw não existem na máquina de trabalho — **ficam para a máquina de casa (E:)**.
+
+## 3. Pré-verificação do piloto no Central RH (raiz registrada: `C:/xampp_lite_8_4/www/centralrh/`)
+
+- Workspace próprio (`centralrh12` + `centralrh12-ai` + `centralrh12-docs`, protocolo `/session-start`). ⚠️ `centralrh12` tem **trabalho uncommitted em andamento** (correções RD-1..RD-5 Revenda/Empresa) — piloto não pode misturar com esse diff.
+- ✅ Os 2 pontos `ozi:change` jQuery-posicional confirmados nas mesmas linhas (`candidate-list.blade.php:754`, `profile/edit.blade.php:388`).
+- 🎉 **Os 2 `x-ui.select2` já saíram** — zero consumidores (matches restantes são exemplos no comentário do componente). Item do piloto já resolvido pelo host; componente pode ser removido.
+- 🔍 **Causa raiz do boot duplo identificada:** `app.blade.php` usa `@oziScripts` (linha 61, boot manual) **E** `footer-vendor-scripts.blade.php:21` carrega `ozi.js` (boot automático, `data-navigate-once`) = dois boots por design; + as 8 views que incluem o footer direto (4 via `x-app-layout` = dobro). Corrigir no piloto: escolher UM mecanismo.
+- 🔍 **Achado novo:** `livewire/revenda/empresa/form.blade.php:~330-347` tem workaround v1 de re-init (`OziSelect.destroy()` manual + `jQuery.removeData('ozi-select-initialized')` + re-dispatch) — desnecessário na v2 (init idempotente via WeakMap); incluir na limpeza do piloto.
 
 ---
 
@@ -94,9 +118,9 @@
 
 ## Próximo passo recomendado
 
-**→ F5-B — Piloto + corte `2.0.0`** (ponto de não-retorno; **só depende do pacote sincronizado**):
-- **Antes:** executar a leva de sincronização entre repos (decisão #18, "uma coisa de cada vez"): (1) `ozi-ai` + `dev-hard` + `ozi-docs` → (2) `dev-bs` → (3) `dev-tw` + `ozi-core`/`ozi-ui`. Incluir aí a revisão do `OziAssets.php` (diferida na F4).
-- **Piloto no Central RH:** 2–3 páginas v2 lado-a-lado com v1; resolver o **boot duplo** no `app.blade.php`; migrar os 2 `x-ui.select2` + os **2 pontos de `ozi:change` jQuery-posicional** (`candidate-list.blade.php:754`, `profile/edit.blade.php:388`).
+**→ F5-B — Piloto no Central RH** (pacote já sincronizado ✅, ver sessão 2026-07-17 no topo):
+- **Piloto:** 2–3 páginas v2 lado-a-lado com v1 (consumir a branch `v2` do pacote — `dev-v2` no composer ou copiar `public/plugins/`); resolver o **boot duplo** (causa raiz: `@oziScripts` + `ozi.js` no footer — escolher UM); migrar os **2 pontos de `ozi:change` jQuery-posicional** (`candidate-list.blade.php:754`, `profile/edit.blade.php:388` — ou carregar o grupo `shims-v1` do `@oziScripts`); limpar o workaround de re-init em `revenda/empresa/form.blade.php`. ⚠️ Não misturar com o diff RD uncommitted do host.
+- **Na máquina de casa (E:):** sincronizar `dev-bs` e `dev-tw` (decisão #18 — não existem na máquina de trabalho).
 - **Corte:** remover shims/aliases `zld`, publicar `2.0.0` (versionamento **major +1 por plugin**, decisão #16), arquivar v1, mover o projeto para `genesis/`. Ponto de não-retorno só aqui.
 
 **Dívidas técnicas:** #11 (receitas Alpine, F4) e #12 (suggest/actions, F2) **resolvidas**; #13/#14 seguem abertas (baixa prioridade).
