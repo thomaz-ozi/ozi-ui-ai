@@ -1,8 +1,39 @@
 # OZI-UI — Handoff de Sessão
-**idDoc:** handoff-current | **Versão:** 1.2 | **Data:** 2026-07-17 (F5-B iniciada: docs de fases revisados/publicados + pacote sincronizado + pré-verificação do piloto no Central RH)
+**idDoc:** handoff-current | **Versão:** 1.3 | **Data:** 2026-07-18 (casa/E:) — F5-B Estágio 1 concluído: dev-tw criado, aceite cross-tema nos 3 sandboxes, fix do tema tailwind, e **pacote v2 gerado como pré-release `2.0.0-beta.1` (no Packagist)**
 
 > Arquivo gravado pela IA ao encerrar cada sessão de trabalho no ozi-ui.
 > Lido no início da sessão seguinte (casa ou trabalho).
+
+---
+
+# SESSÃO 2026-07-18 (casa/E:) — F5-B: sandboxes validados + beta.1 publicado
+
+## 1. `ozi-ui-dev-tw` criado (sandbox Tailwind 4) 🆕
+
+- Portadas as demos do `dev-bs` (Bootstrap) para **Tailwind 4**, reescrevendo todo o markup BS→TW: layout, 12 wrappers `tools/*`, 11 views `livewire/tools/*-demo`, páginas home/about/download. Rotas + 11 classes Livewire **idênticas** ao dev-bs (backend agnóstico). Consome o plugin v2 com `oziConf({ theme: 'tailwind' })`.
+- **Gotchas (memória `dev-tw-setup.md`):** Tailwind via **CDN browser build** (`@tailwindcss/browser@4`), NÃO Vite — o classMap injeta utilitários em runtime que o build não escaneia. `@oziStyles` NÃO injeta o CSS do tema → o layout linka manualmente `themes/default/{tokens,overrides}` + `tailwind/{tokens,overrides}`. `composer require --no-scripts` deixou o `bootstrap/cache/packages.php` sem o pacote → `@oziScripts` virou literal; fix: `php artisan package:discover`. `.env` do dev-tw ajustado p/ rodar sem DB (este PHP só tem `pdo_mysql`): `SESSION/CACHE=file`, `QUEUE=sync`.
+
+## 2. F5-B Estágio 1 — aceite cross-tema nos 3 sandboxes ✅
+
+- **Os 3 sandboxes rodam o MESMO build v2 canônico** (dev-bs/dev-tw = dev-hard; `diff --strip-trailing-cr` = 0 diffs reais — divergência só de CRLF↔LF).
+- **default (dev-hard):** `aceite.html` 10/10 + `aceite-temas.html` 14/14 (troca de tema em runtime). **bootstrap5 (dev-bs)** e **tailwind (dev-tw):** 9/9 componentes bootam via Edge headless, **0 erro JS**. **Varredura visual** (screenshots) do dev-tw: select/autocomplete/editor/audio/auth/check/toggle/search/loaddata **9/9 sem regressão**.
+- Decisão #19 (mesmo JS, tema só troca classMap) provada em **apps Livewire reais**, não só nas páginas de aceite.
+
+## 3. 🐛 Bug real do tema tailwind achado+corrigido (overrides.css → v1.0.1)
+
+- `themes/tailwind/overrides.css` aplicava `display:block` em `.ozi-select-control`, **sobrescrevendo o `display:flex`** do componente → ícone/valor/ações empilhavam na vertical. Só o **dev-tw** carrega esse override (bootstrap5 usa classMap + Bootstrap CDN), por isso só ele quebrava. Fix: `display:block` fica **só no `.ozi-autocomplete-input`** (que é `<input>`); o control mantém flex. Persistiu após re-render Livewire (re-init via `ozi-hooks` OK). Corrigido na fonte (**dev-hard**) e propagado idêntico ao **pacote + dev-bs + dev-tw** (os 4 em v1.0.1). *Lição: override de tema com `display:block` quebra controle flex — validar layout VISUAL, não só boot; o dev-tw serve exatamente pra isso.*
+
+## 4. Commits + push (todos em sync com origin)
+
+- **dev-hard** `a4b7f0f` + **pacote `ozi-ui`** `51f7f5e` → fix do tema, na branch **`v2`**.
+- **dev-bs** `857fb0b` (sync plugin v1→v2, 39 arq., major +1 por plugin visível: ozi-conf 2.0.3→3.0.0, select 5.0.2→6.0.0) + **dev-tw** `8248567` (sandbox v2, 193 arq.) → na branch nova **`v2-sync`** (defaults `main`/`master` preservadas).
+- **template-theme.css** (dev-hard): era resíduo untracked (cópia mal-nomeada do `_template/tokens.css`), mas o usuário o commitou em `53b5ad1 "up"` (agora tracked em origin/v2). Inócuo — deixado a critério (remover via commit ou manter).
+
+## 5. 🎉 Pacote v2 gerado — pré-release `2.0.0-beta.1` (Packagist)
+
+- Commit **`c2d6b9d`** na `v2`: `composer.json version` `2.0.0-dev`→**`2.0.0-beta.1`** (alinha com a tag e o cache-bust do `OziAssets`; o campo fixo conflitaria com a tag se ficasse `-dev`). Tag anotada **`v2.0.0-beta.1`** pushada.
+- **Packagist sincronizado** (verificado via `repo.packagist.org/p2/ozi-ui/core.json`): versões `1.0.7` (v1) + **`2.0.0-beta.1`** (v2). Instalável: **`composer require ozi-ui/core:2.0.0-beta.1`** (a constraint de beta já libera a stability por-pacote — sem mexer no `minimum-stability` do host).
+- **Reversível** — é pré-release, NÃO o corte. O `2.0.0` final continua sendo o Estágio 3, só depois do piloto. Isso melhora o piloto: dá pra consumir a v2 pela via real (Composer).
 
 ---
 
@@ -116,15 +147,21 @@
 - Contrato v2 oficial (`ozi-ui-docs/dev/_meta/contrato-v2.md`) — camadas + eventos (§emit, §source).
 - Regras para a IA (`ozi-ui-ai/context/regras-v2.md`) — R1–R14 + armadilhas A1–A5.
 
-## Próximo passo recomendado — **continuação NA CASA (E:)** (decisão do usuário, 2026-07-17)
+## Próximo passo recomendado — **F5-B Estágio 2: piloto no Central RH**
 
-**Ao chegar na casa, primeiro `git pull` nos repos atualizados hoje:** `ozi-ui` (branch **`v2`**, `af0b52f`), `ozi-ui-docs` (`f3acce5`), `ozi-ui-ai` (`03a033b`). O dev-hard não mudou hoje.
+Estágios 0/1 **concluídos** (2026-07-18): 4 ambientes prontos, os 3 sandboxes validados no mesmo build v2, e **`2.0.0-beta.1` publicado no Packagist**. O piloto agora pode consumir a v2 pela via real (Composer).
 
-**→ F5-B na casa** (pacote já sincronizado ✅, ver sessão 2026-07-17 no topo):
-1. **Sincronizar `dev-bs` e `dev-tw`** (decisão #18 — vivem só na casa): copiar `public/plugins/ozi-ui` da branch `v2` do pacote para `public/` e `vendor/ozi-ui/core/...` (checklist do `prompts/sincronizar.md`, seção 3).
-2. **Piloto no Central RH** (na casa: `E:/xampp/www/centralrh/centralrh12`): 2–3 páginas v2 lado-a-lado com v1 (consumir a branch `v2` do pacote — `dev-v2` no composer ou copiar `public/plugins/`); resolver o **boot duplo** (causa raiz: `@oziScripts` + `ozi.js` no footer — escolher UM); migrar os **2 pontos de `ozi:change` jQuery-posicional** (`candidate-list.blade.php:754`, `profile/edit.blade.php:388` — ou carregar o grupo `shims-v1` do `@oziScripts`); limpar o workaround de re-init em `revenda/empresa/form.blade.php`.
-   - ⚠️ O diff RD uncommitted do host está só na máquina de TRABALHO (C:) — antes do piloto na casa, conferir se o `centralrh12` de lá está atualizado com o remoto (o inventário da pré-verificação foi feito no working tree do C:).
-3. **Corte:** remover shims/aliases `zld`, publicar `2.0.0` (versionamento **major +1 por plugin**, decisão #16), arquivar v1, mover o projeto para `genesis/`. Ponto de não-retorno só aqui.
+**Piloto no Central RH** (`E:/xampp/www/centralrh/centralrh12`, workspace próprio `/session-start` — o tracking detalhado vive no `centralrh12-ai`/`-docs`; decisões do plugin voltam pro `ozi-ui-ai`). 2–3 páginas em v2:
+- **Como consumir a v2 (2 opções):** (a) **lado-a-lado** — copiar o build v2 p/ `public/plugins/ozi-ui-v2/` + layout de piloto que carrega `plugins/ozi-ui-v2/ozi.js` (auto-detecta urlBase) só nessas páginas, resto v1; ou (b) **switch via composer** numa branch do host — `composer require ozi-ui/core:2.0.0-beta.1` (troca tudo de uma vez).
+- **Boot duplo:** manter **`@oziScripts`** (decisão #10) e **remover** o `<script ozi.js>`+`oziConf` do `partials/footer-vendor-scripts.blade.php:21-23` (9 views incluem o footer). Nas páginas-piloto, condicionar o layout p/ um único boot (v1 OU v2).
+- **Migrar** os 2 `ozi:change` jQuery-posicional p/ `addEventListener`+`e.detail`: `livewire/empresa/modulo/vagas/candidate-list.blade.php:754` e `profile/edit.blade.php:388` (decisão do usuário: migrar, sem shim).
+- **Remover** o workaround de re-init `livewire/revenda/empresa/form.blade.php:337` (`jQuery(rootEl).removeData('ozi-select-initialized')`) — desnecessário na v2.
+- **Pré-check:** `centralrh12` (E:) está limpo em `master`, lock `1.0.7`; ⚠️ o `vendor/ozi-ui/core/composer.json` mostra `0.19.3-alpha` (lock diz 1.0.7) — rodar `composer install` de sanidade antes.
+- **Aceite do piloto:** zero regressão de dados (ZLD, 55+ URLs), zero listener duplicado (um só `OZI.isReady`).
+
+**Estágio 3 — Corte (ponto de não-retorno, só depois do piloto passar):** tag **`2.0.0`** final (major +1 por plugin, decisão #16); remover shims/aliases `zld` + grupo `shims-v1` + bridge `zldHooks→OZI.hooks`; host → `composer require ozi-ui/core:^2.0`; arquivar v1; mover o projeto p/ `genesis/`.
+
+**Plano detalhado da F5-B:** `C:/Users/Thomaz/.claude/plans/cheerful-greeting-cosmos.md`.
 
 **Dívidas técnicas:** #11 (receitas Alpine, F4) e #12 (suggest/actions, F2) **resolvidas**; #13/#14 seguem abertas (baixa prioridade).
 
