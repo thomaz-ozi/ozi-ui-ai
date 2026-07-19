@@ -1,5 +1,5 @@
 # OZI-UI — Handoff de Sessão
-**idDoc:** handoff-current | **Versão:** 1.4 | **Data:** 2026-07-19 (casa/E:) — F5-B Estágio 2 **destravado**: pré-check do host OK, decisão **"piloto rápido → corte"** (não pular o piloto), corte **enfileirado** nesta sessão. O piloto roda no workspace do `centralrh12`.
+**idDoc:** handoff-current | **Versão:** 1.5 | **Data:** 2026-07-19 (casa/E:) — F5-B Estágio 2 **EM EXECUÇÃO**: piloto v2 **implementado e commitado** no `centralrh12` (branch `pilot-v2`, switch via Composer p/ `2.0.0-beta.1`). Server-side verde + página 1 (profile) funcional; **falta** terminar o teste interativo (demais erros de console + páginas 2/3) antes do corte. Ver §8.
 
 > Arquivo gravado pela IA ao encerrar cada sessão de trabalho no ozi-ui.
 > Lido no início da sessão seguinte (casa ou trabalho).
@@ -47,9 +47,30 @@
 4. **Plugin → remover a rede v1:** shims/aliases `zld` + grupo `shims-v1` + bridge `zldHooks→OZI.hooks`; arquivar `ozi-copy`/`ozi-paste` → **guard tem que ir a 0**.
 5. **Docs/contexto:** `fases-implantacao-v2` → F5-B/corte concluídos; mover roadmap v2 `horizonte/roadmap/` → `genesis/`; registrar decisão do corte em `decisions.md` (#21?) + `lessons-learned.md` + handoff.
 
-## ⏳ Retomar amanhã por aqui
-- **Ação imediata:** rodar o piloto na **sessão do `centralrh12`** (briefing §6).
-- **Sub-decisão pendente p/ o corte:** destino do `master` — virar v2 e arquivar a v1 (a tag `v1-final` já existe), ou manter a v1 em paralelo.
+## 8. 🚧 PILOTO EXECUTADO nesta sessão — `centralrh12` branch `pilot-v2` (WIP commit `54ef4dd3`)
+
+> Nota: executei o piloto a partir DESTA sessão (ozi-ui), não da sessão do centralrh12 como §3 previa — mas está tudo commitado e **isolado na branch `pilot-v2`** (`master` intacto em `3b326768`, que já tem o RD commitado). Espelhar no `centralrh12-ai` depois, se quiser.
+
+**Abordagem:** switch via Composer (§6 opção 1b). `composer require ozi-ui/core:2.0.0-beta.1` (resolveu o vendor `0.19.3-alpha`→`2.0.0-beta.1`). Assets v2 publicados em `public/plugins/ozi-ui` via **cópia** de `vendor/.../public/plugins/ozi-ui` (o `vendor:publish` precisa do DB).
+
+**Implementado (5 arquivos):** §2 boot duplo — bloco OZI removido de `footer-vendor-scripts.blade.php`; `oziConf({lang,theme})`+re-init do autocomplete movidos p/ `app.blade.php` **depois** do `@oziScripts`. §3 os 2 `ozi:change` → `addEventListener('ozi:change', e => e.detail.items)` com remove/re-bind seguro (`candidate-list` + `profile/edit`; **atenção:** o usuário também modificou `profile/edit` — minha migração segue intacta). §4 workaround `jQuery.removeData` removido (`revenda/empresa/form`).
+
+**2 bugs achados+corrigidos (lições):**
+- **(A) `@diretiva` em COMENTÁRIO Blade é EXECUTADA.** Escrevi `@oziScripts`/`@livewireScripts` em comentário `<!-- -->` → o Blade os rodou → boot duplo + HTML quebrado no `/vagas`. Fix: comentário `{{-- --}}` **sem `@`**. *(nunca escrever `@nome-de-diretiva` em comentário)*
+- **(B) `autocomplete.init(document)` quebra na v2.** `document.nodeType===9` (não 1) → o `init` trata como seletor → `querySelector(document)` estoura. Fix no host: `init()` **sem arg** (aí o escopo já vira `document`). **➡️ Follow-up plugin (dev-hard):** endurecer `autocomplete/select .init()` p/ aceitar `document` (nodeType 9) sem quebrar — mesma classe de bug nos dois.
+
+**Verificado:** ✅ server-side tudo verde — sintaxe (`view:cache`), app 200, **boot único** (`app.blade.php` compilado tem `OziAssets->scripts()`=1) + `oziConf` presente, `/vagas` (público) limpo (0 ozi), **API imperativa v2 compatível** (`OziSelect.init/get/destroy`, `clearSelection` — docblock diz "API pública inalterada"). ✅ **Página 1 (`profile`) funcional:** selecionar badges gera os `input[name="badges[]"]` (AL, AP) — prova que o `ozi:change` migrado entrega `e.detail.items`. *(os badges azuis são `badge bg-primary` do host via `renderBadges()`, não do ozi — estilo é customização do Dev, OK.)*
+
+**⚠️ Pré-req operacional:** o **MySQL/MariaDB do host TEM que estar de pé** (3306) — o `AppServiceProvider` faz query no boot; sem DB, `artisan`/`serve`/`view:cache` falham. (Nesta sessão o usuário subiu o DB + `php artisan serve` na :8000.)
+
+## ⏳ Retomar por aqui (próxima sessão) — terminar o teste interativo do piloto
+1. **No `centralrh12` (branch `pilot-v2`, DB up + `php artisan serve`):**
+   - recarregar `/profile` (Ctrl+Shift+R) e confirmar que o erro `autocomplete.init` **sumiu** (já recompilei o view:cache com o fix);
+   - **pegar os DEMAIS erros de console** que o usuário tem (não mostrados) e corrigir — padrão provável: "API v2 chamada como v1";
+   - testar **página 2** (filtro de badges em `empresa/vagas/{id}/candidates`) e **página 3** (`plano_token` em `revenda/empresa/form`).
+2. **Aceite do piloto:** zero regressão ZLD + zero listener duplicado. Verde → **corte** (§7): re-grep A1, plugin `2.0.0`, host `^2.0`, remover rede v1, docs.
+3. **Sub-decisão pendente p/ o corte:** destino do `master` do pacote — virar v2 e arquivar a v1 (tag `v1-final` já existe), ou manter v1 em paralelo.
+- **Commit WIP do piloto:** `54ef4dd3` na `pilot-v2` (local; push a critério — remote `oswaldopaulo/centralrh12`). `master` intacto.
 
 ---
 
