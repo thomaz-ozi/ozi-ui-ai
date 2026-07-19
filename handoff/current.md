@@ -1,8 +1,55 @@
 # OZI-UI — Handoff de Sessão
-**idDoc:** handoff-current | **Versão:** 1.3 | **Data:** 2026-07-18 (casa/E:) — F5-B Estágio 1 concluído: dev-tw criado, aceite cross-tema nos 3 sandboxes, fix do tema tailwind, e **pacote v2 gerado como pré-release `2.0.0-beta.1` (no Packagist)**
+**idDoc:** handoff-current | **Versão:** 1.4 | **Data:** 2026-07-19 (casa/E:) — F5-B Estágio 2 **destravado**: pré-check do host OK, decisão **"piloto rápido → corte"** (não pular o piloto), corte **enfileirado** nesta sessão. O piloto roda no workspace do `centralrh12`.
 
 > Arquivo gravado pela IA ao encerrar cada sessão de trabalho no ozi-ui.
 > Lido no início da sessão seguinte (casa ou trabalho).
+
+---
+
+# SESSÃO 2026-07-19 (casa/E:) — F5-B Estágio 2 destravado: pré-check do host + decisão "piloto rápido → corte"
+
+> Sessão curta de alinhamento/verificação — **nenhum código do plugin ou do host foi alterado**. Saídas: pré-check do host, decisões de sequência, e o corte enfileirado. O piloto em si roda na **sessão do `centralrh12`**.
+
+## 1. Session-start + estado dos repos
+- Contexto relido (handoff + docs dos 2 repos). **`ozi-ui-ai` (`main`) e `ozi-ui-docs` (`master`): limpos e em sync com origin** — nada pendente de git neles.
+
+## 2. Pré-check do host (Central RH, E:) ✅ — verificado, não confiado (A1)
+- **`centralrh12` git LIMPO** em `master`, em sync com origin. **O "uncommitted RD-1..RD-5" que o handoff v1.3 alertava está RESOLVIDO** — commitado em `3b326768` ("RD-1 a RD-6 | SEGURANÇA Revenda/Empresas"). O piloto **não** vai misturar com aquele diff.
+- `composer.lock` = **`ozi-ui/core 1.0.7`** ✅.
+- ⚠️ **`vendor/ozi-ui/core/composer.json` = `0.19.3-alpha`** (diverge do lock) → **rodar `composer install` de sanidade ANTES de qualquer edição** (é o passo 0 do piloto).
+- `public/plugins/ozi-ui` publicado (v1); constraint `^1.0`.
+- `centralrh12` tem **workspace próprio completo** (`centralrh12-ai`/`-docs`, `/session-start` próprio, handoff de 48KB).
+
+## 3. Decisão de workspace — o piloto roda no centralrh12
+- A **execução** do piloto (editar blades do host, boot, migrar os `ozi:change`) roda na **sessão do `centralrh12`** (abrir o projeto lá + `/session-start` p/ carregar CLAUDE.md/memória/handoff próprios do host). Esta sessão do **ozi-ui** é onde **as decisões do plugin voltam** e onde **o corte é executado**.
+
+## 4. Estado do "estável" — verificado (o usuário propôs lançar a v2)
+- **dev-hard (`v2`):** guard `check-camadas.sh` **VERDE** (2 `PENDING_V1` = só `ozi-copy`/`ozi-paste` descontinuados). Escopo v2 todo fora do guard.
+- **pacote (`v2`):** `composer.json` = `2.0.0-beta.1`, tag `v2.0.0-beta.1`. **Packagist** serve `2.0.0-beta.1` + `1.0.7`.
+- **Distinção registrada:** "estável nos sandboxes + aceites headless" **≠** "validado em produção". Os **4 riscos que SÓ o piloto enxerga**: (a) boot duplo real (`@oziScripts`+`ozi.js` no footer), (b) os 2 `ozi:change` jQuery-posicionais quebrarem sem shim, (c) **ZLD em escala** (55+ URLs → modal/offcanvas), (d) re-init do Livewire pós-morph real.
+
+## 5. 🧭 DECISÃO do usuário — "piloto rápido → corte" (não pular o piloto)
+- Lançar a v2 **via piloto**, não por cima dele. Código já pronto → piloto curto (2–3 páginas). **Se voltar verde → publicar `2.0.0` stable + remover shims + migrar host logo em seguida, com evidência real.** O gate fica, mas curto.
+- Reversível × irreversível ficou claro: publicar `2.0.0` *disponível* é barato (ninguém em `^1.0` é forçado); o **corte** (remover shims, migrar host p/ `^2.0`, arquivar v1, mover p/ `genesis/`) é o ponto de não-retorno.
+
+## 6. Briefing do piloto (inputs do lado-plugin — colar na sessão do centralrh12)
+0. **Sanidade:** `composer install` (vendor `0.19.3-alpha` → lock `1.0.7`).
+1. **Consumir a v2:** (a) lado-a-lado — build v2 do dev-hard → `public/plugins/ozi-ui-v2/` + layout de piloto só nas páginas; ou (b) `composer require ozi-ui/core:2.0.0-beta.1` numa branch do host.
+2. **Boot duplo:** manter `@oziScripts`; **remover** `<script ozi.js>`+`oziConf` de `partials/footer-vendor-scripts.blade.php:21-23`.
+3. **Migrar** (sem shim) os 2 `ozi:change` posicionais → `addEventListener`+`e.detail`: `livewire/empresa/modulo/vagas/candidate-list.blade.php:754` e `profile/edit.blade.php:388`.
+4. **Remover** workaround de re-init: `livewire/revenda/empresa/form.blade.php:337`.
+5. Regras: R1 · R3 · R5. **Aceite do piloto:** zero regressão ZLD + zero listener duplicado (um só `OZI.isReady`).
+
+## 7. 🔪 Corte enfileirado (dispara NESTA sessão quando o piloto voltar verde) — ordem importa
+1. **A1 antes de remover shim:** re-grep o host inteiro (`\.on\('ozi:`, `ozi:change` posicional, `removeData\('ozi-`) — confirmar que só os 3 pontos do piloto dependiam da rede v1.
+2. **Plugin → `2.0.0`:** `composer.json` `2.0.0-beta.1`→`2.0.0` na `v2`; **[sub-decisão em aberto: destino do `master`]**; tag `v2.0.0`; push → Packagist.
+3. **Host → `composer require ozi-ui/core:^2.0`**.
+4. **Plugin → remover a rede v1:** shims/aliases `zld` + grupo `shims-v1` + bridge `zldHooks→OZI.hooks`; arquivar `ozi-copy`/`ozi-paste` → **guard tem que ir a 0**.
+5. **Docs/contexto:** `fases-implantacao-v2` → F5-B/corte concluídos; mover roadmap v2 `horizonte/roadmap/` → `genesis/`; registrar decisão do corte em `decisions.md` (#21?) + `lessons-learned.md` + handoff.
+
+## ⏳ Retomar amanhã por aqui
+- **Ação imediata:** rodar o piloto na **sessão do `centralrh12`** (briefing §6).
+- **Sub-decisão pendente p/ o corte:** destino do `master` — virar v2 e arquivar a v1 (a tag `v1-final` já existe), ou manter a v1 em paralelo.
 
 ---
 
@@ -148,6 +195,8 @@
 - Regras para a IA (`ozi-ui-ai/context/regras-v2.md`) — R1–R14 + armadilhas A1–A5.
 
 ## Próximo passo recomendado — **F5-B Estágio 2: piloto no Central RH**
+
+> **Atualização 2026-07-19** (ver sessão no topo): decisão firmada **"piloto rápido → corte"**. Pré-check do host feito; **falta o `composer install` de sanidade** (vendor `0.19.3-alpha` × lock `1.0.7`). O piloto roda na **sessão do `centralrh12`**; o **corte** já está enfileirado nesta sessão do ozi-ui.
 
 Estágios 0/1 **concluídos** (2026-07-18): 4 ambientes prontos, os 3 sandboxes validados no mesmo build v2, e **`2.0.0-beta.1` publicado no Packagist**. O piloto agora pode consumir a v2 pela via real (Composer).
 
