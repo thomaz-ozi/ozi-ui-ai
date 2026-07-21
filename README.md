@@ -48,4 +48,4 @@ ozi-ui-ai/
 
 ---
 
-*Alias do projeto: `ozi-ai` | Local: `E:/xampp/www/ozi/ozi-ui-ai`*
+*Alias do projeto: `-ai` | Local: `E:/xampp/www/ozi-ui/ozi-ui-ai`*

@@ -16,11 +16,11 @@ Fornece components, behaviors e modules com suporte a 3 temas (default, Bootstra
 e integração com Livewire 3/4.
 
 ### Repositórios
-- `ozi-ui` (E:/xampp/www/ozi/ozi-ui) — o plugin, público
-- `ozi-ui-docs` (E:/xampp/www/ozi/ozi-ui-docs) — documentação interna, 49 arquivos em dev/
-- `ozi-ui-dev-hard` (E:/xampp/www/ozi/ozi-ui-dev-hard) — sandbox PHP puro
-- `ozi-ui-dev-bs` (E:/xampp/www/ozi/ozi-ui-dev-bs) — sandbox Laravel 13 + Livewire 4 + BS5
-- `ozi-ui-dev-tw` (E:/xampp/www/ozi/ozi-ui-dev-tw) — sandbox Laravel 13 + Livewire 4 + TW4
+- `ozi-ui` (E:/xampp/www/ozi-ui/ozi-ui-pkg) — o plugin, público
+- `ozi-ui-docs` (E:/xampp/www/ozi-ui/ozi-ui-docs) — documentação interna, 49 arquivos em dev/
+- `ozi-ui-dev-hard` (E:/xampp/www/ozi-ui/ozi-ui-dev-hard) — sandbox PHP puro
+- `ozi-ui-dev-bs` (E:/xampp/www/ozi-ui/ozi-ui-dev-bs) — sandbox Laravel 13 + Livewire 4 + BS5
+- `ozi-ui-dev-tw` (E:/xampp/www/ozi-ui/ozi-ui-dev-tw) — sandbox Laravel 13 + Livewire 4 + TW4
 
 ### Ambiente
 - Windows 11, XAMPP PHP 8.4.6, MariaDB 11.4

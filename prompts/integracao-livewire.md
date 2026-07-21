@@ -61,8 +61,8 @@ Para atualizar opções de um plugin via Livewire:
 [DESCREVA: novo plugin, debug de integração existente, migrar LW3→LW4, etc.]
 
 ## Sandbox para testar
-- Bootstrap 5 + Livewire 4: `dev-bs` (E:/xampp/www/ozi/ozi-ui-dev-bs)
-- Tailwind 4 + Livewire 4: `dev-tw` (E:/xampp/www/ozi/ozi-ui-dev-tw) — futuro
+- Bootstrap 5 + Livewire 4: `dev-bs` (E:/xampp/www/ozi-ui/ozi-ui-dev-bs)
+- Tailwind 4 + Livewire 4: `dev-tw` (E:/xampp/www/ozi-ui/ozi-ui-dev-tw) — futuro
 
 ## Checklist de debug de integração
 - [ ] O arquivo `.plugin.js` está no `_pluginMap`?

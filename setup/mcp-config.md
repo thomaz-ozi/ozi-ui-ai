@@ -14,8 +14,8 @@ MCP (Model Context Protocol) permite conectar o Claude Code a ferramentas extern
 
 | Arquivo | Escopo | Localização |
 |---|---|---|
-| `settings.json` | Projeto | `E:/xampp/www/ozi/ozi-ui/.claude/settings.json` |
-| `settings.local.json` | Local (não commitar) | `E:/xampp/www/ozi/ozi-ui/.claude/settings.local.json` |
+| `settings.json` | Projeto | `E:/xampp/www/ozi-ui/ozi-ui-pkg/.claude/settings.json` |
+| `settings.local.json` | Local (não commitar) | `E:/xampp/www/ozi-ui/ozi-ui-pkg/.claude/settings.local.json` |
 | `settings.json` global | Usuário | `C:/Users/Thomaz/.claude/settings.json` |
 
 ---

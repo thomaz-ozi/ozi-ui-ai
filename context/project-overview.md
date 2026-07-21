@@ -19,7 +19,7 @@
 >
 > **Versionamento — major +1 por plugin** (não versão única): `ozi.js` (índice da geração) 1.0.7→**2.0.0**, `ozi-conf`→**3.0.0**, loaddata→5.0.0, select→6.0.0, autocomplete/editor/auth/search/**audio**→4.0.0, check/toggle→3.0.0, validate/actions/suggest→2.x, helpers→1.1.0. Descontinuados (uso zero): `ozi-copy`, `ozi-paste`.
 >
-> **Ordem de sync entre repos (decisão 2026-07-05, "uma coisa de cada vez"):** (1) `ozi-ai` + `dev-hard` + `ozi-docs` → (2) `dev-bs` → (3) `dev-tw` + `ozi-core`/`ozi-ui`. Detalhe: `ozi-ui-docs/horizonte/roadmap/ozi-ui-v2-projeto-implementacao.md`.
+> **Ordem de sync entre repos (decisão 2026-07-05, "uma coisa de cada vez"):** (1) `-ai` + `-hard` + `-docs` → (2) `-bs` → (3) `-tw` + `-pkg`/`ozi-ui`. Detalhe: `ozi-ui-docs/horizonte/roadmap/ozi-ui-v2-projeto-implementacao.md`.
 
 ---
 
@@ -27,13 +27,13 @@
 
 | Repositório | Visibilidade | Alias | Local | Propósito |
 |---|---|---|---|---|
-| `ozi-ui` | público / homologação | `ozi-core` | `E:/xampp/www/ozi/ozi-ui` | O plugin em si — distribuído via download e Composer |
-| `ozi-ui-ai` | privado | `ozi-ai` | `E:/xampp/www/ozi/ozi-ui-ai` | Experiência da IA — context, logs, prompts, setup |
-| `ozi-ui-website` | privado / produção | `ozi-website` | `E:/xampp/www/ozi/ozi-ui-website` | Website do plugin (oziui.com) |
-| `ozi-ui-docs` | privado | `ozi-docs` | `E:/xampp/www/ozi/ozi-ui-docs` | Documentação interna, changelogs, decisões |
-| `ozi-ui-dev-hard` | privado | `dev-hard` | `E:/xampp/www/ozi/ozi-ui-dev-hard` | Sandbox principal — PHP puro, testes brutos do core |
-| `ozi-ui-dev-bs` | privado | `dev-bs` | `E:/xampp/www/ozi/ozi-ui-dev-bs` | Sandbox secundário — Laravel 13+ Livewire 4 + Bootstrap 5 |
-| `ozi-ui-dev-tw` | privado | `dev-tw` | `E:/xampp/www/ozi/ozi-ui-dev-tw` | Sandbox futuro — Laravel 13+ Livewire 4 + Tailwind 4 |
+| `ozi-ui` | público / homologação | `-pkg` | `E:/xampp/www/ozi-ui/ozi-ui-pkg` | O plugin em si — distribuído via download e Composer |
+| `ozi-ui-ai` | privado | `-ai` | `E:/xampp/www/ozi-ui/ozi-ui-ai` | Experiência da IA — context, logs, prompts, setup |
+| `ozi-ui-website` | privado / produção | `-website` | `E:/xampp/www/ozi-ui/ozi-ui-website` | Website do plugin (oziui.com) |
+| `ozi-ui-docs` | privado | `-docs` | `E:/xampp/www/ozi-ui/ozi-ui-docs` | Documentação interna, changelogs, decisões |
+| `ozi-ui-dev-hard` | privado | `-hard` | `E:/xampp/www/ozi-ui/ozi-ui-dev-hard` | Sandbox principal — PHP puro, testes brutos do core |
+| `ozi-ui-dev-bs` | privado | `-bs` | `E:/xampp/www/ozi-ui/ozi-ui-dev-bs` | Sandbox secundário — Laravel 13+ Livewire 4 + Bootstrap 5 |
+| `ozi-ui-dev-tw` | privado | `-tw` | `E:/xampp/www/ozi-ui/ozi-ui-dev-tw` | Sandbox futuro — Laravel 13+ Livewire 4 + Tailwind 4 |
 
 ### Projeto host (consumidor em produção)
 

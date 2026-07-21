@@ -28,11 +28,11 @@ dev-hard  →  ozi-ui  →  dev-bs
 Olá! Vamos sincronizar uma nova versão do ozi-ui.
 
 Repositórios envolvidos:
-- ozi-ui          → E:/xampp/www/ozi/ozi-ui
-- ozi-ui-dev-hard → E:/xampp/www/ozi/ozi-ui-dev-hard
-- ozi-ui-dev-bs   → E:/xampp/www/ozi/ozi-ui-dev-bs
-- ozi-ui-docs     → E:/xampp/www/ozi/ozi-ui-docs
-- ozi-ui-ai       → E:/xampp/www/ozi/ozi-ui-ai
+- ozi-ui          → E:/xampp/www/ozi-ui/ozi-ui-pkg
+- ozi-ui-dev-hard → E:/xampp/www/ozi-ui/ozi-ui-dev-hard
+- ozi-ui-dev-bs   → E:/xampp/www/ozi-ui/ozi-ui-dev-bs
+- ozi-ui-docs     → E:/xampp/www/ozi-ui/ozi-ui-docs
+- ozi-ui-ai       → E:/xampp/www/ozi-ui/ozi-ui-ai
 
 Nova versão: [EX: 1.0.8]
 
