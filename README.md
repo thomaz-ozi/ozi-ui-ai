@@ -11,6 +11,8 @@ Contém o contexto acumulado, prompts reutilizáveis e aprendizados técnicos qu
 ```
 ozi-ui-ai/
 ├── README.md                   ← este arquivo
+├── commands/
+│   └── session-start.md        ← comando `/session-start` — carrega o contexto na ordem certa
 ├── setup/
 │   ├── mcp-config.md           ← guia de configuração MCP no Windows
 │   ├── settings.json           ← template .claude/settings.json
@@ -42,7 +44,7 @@ ozi-ui-ai/
 
 ## Como usar
 
-1. **Nova sessão:** abra `prompts/nova-sessao.md` e cole o prompt completo no Claude Code
+1. **Nova sessão:** rode `/session-start` (comando em `commands/`) para carregar o contexto na ordem correta; alternativa manual: `prompts/nova-sessao.md`
 2. **Nova tarefa específica:** use o prompt da pasta `prompts/` que corresponde ao que você vai fazer
 3. **Dúvidas de contexto:** consulte `context/` para referência rápida
 
