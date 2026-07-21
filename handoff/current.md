@@ -1,8 +1,85 @@
 # OZI-UI — Handoff de Sessão
-**idDoc:** handoff-current | **Versão:** 1.5 | **Data:** 2026-07-19 (casa/E:) — F5-B Estágio 2 **EM EXECUÇÃO**: piloto v2 **implementado e commitado** no `centralrh12` (branch `pilot-v2`, switch via Composer p/ `2.0.0-beta.1`). Server-side verde + página 1 (profile) funcional; **falta** terminar o teste interativo (demais erros de console + páginas 2/3) antes do corte. Ver §8.
+**idDoc:** handoff-current | **Versão:** 1.6 | **Data:** 2026-07-20 (casa/E:) — F5-B Estágio 2: **BUG REAL do v2 caçado pelo piloto, corrigido e sincronizado nos 4 repos**. `DOMException` em `init(document)` (select/autocomplete/audio) que **nenhum dos 18 aceites headless pegou** — só aparece com `ozi-hooks` + `wire:navigate`. Erro confirmado eliminado no host. **A1 do corte pré-verificado.** Faltam: decisão da versão do pacote, páginas 2/3 do piloto, e o `lang` (cosmético). Ver §SESSÃO 2026-07-20.
 
 > Arquivo gravado pela IA ao encerrar cada sessão de trabalho no ozi-ui.
 > Lido no início da sessão seguinte (casa ou trabalho).
+
+---
+
+# SESSÃO 2026-07-20 (casa/E:) — Reorganização dos repos + BUG REAL do v2 achado pelo piloto
+
+> Sessão longa e produtiva, encerrada com o usuário cansado — o alinhamento final (sync + docs + este handoff) foi feito pela IA a pedido dele. **Nada foi pushado.**
+
+## 1. Reorganização de pastas + nova convenção de alias
+
+- `E:/xampp/www/ozi/` → **`E:/xampp/www/ozi-ui/`** (diferencia do projeto irmão `ozi-arch`).
+- Pasta do pacote `ozi-ui/ozi-ui` → **`ozi-ui/ozi-ui-pkg`** (nome reflete a finalidade: repositório de publicação). O pacote Composer **segue `ozi-ui/core`**, inalterado.
+- **Aliases agora são só o sufixo/papel**, project-agnostic: `-pkg`, `-ai`, `-docs`, `-website`, `-hard`, `-bs`, `-tw`. Motivo do usuário: não ter que lembrar a inicial de cada projeto (`ozi-docs` vs `sn-docs`) — o papel vem do alias, o projeto vem do contexto.
+- Propagado em `-ai` (README, aliases, project-overview, prompts, mcp-config) e `-docs` (index, dev/index). Commits: `-ai` **7985366**, `-docs` **ed51040**.
+- ⚠️ **Preservado:** `ozi-core` continua sendo o **nome do plugin** na doc técnica (`dev/core/ozi-core/`) — não confundir com o alias antigo. Uma troca em massa teria corrompido a doc.
+
+## 2. 🐛 BUG REAL do v2 — o piloto justificou sua existência
+
+**Sintoma:** a cada `wire:navigate`, 3 erros no console do Central RH:
+`DOMException: Document.querySelector: '[object HTMLDocument]' is not a valid selector`
+em `ozi-select.js:1189`, `ozi-autocomplete.js:764`, `ozi-audio.js:926`.
+
+**Causa raiz:** `ozi-hooks.js:138` faz `_registry[id](root || document, ctx)` — **converte root nulo em `document`**. Os `init()` decidiam "elemento ou seletor?" por `nodeType`: `(scope.nodeType === 1) ? scope : document.querySelector(scope)`. Como `document.nodeType === 9` (e não 1), caía no ramo de seletor e o `querySelector(document)` estourava.
+
+**Fix:** resolução por **tipo**, não por `nodeType` — `string` → `querySelector`; nó com `querySelectorAll` (Element/Document/Fragment) → escopo direto; senão `null`. No `get()` do select, não-Element retorna `null` (depende de `getAttribute`).
+
+**4 pontos / 3 componentes:** select `init`+`get` → **v6.0.1**; autocomplete `init` → **v4.0.1**; audio `init` → **v4.0.1**.
+
+**`ozi-hooks` NÃO foi alterado** — `toggle`/`auth`/`editor`/`search`/`validate` recebem o mesmo `document` no hook e tratam corretamente; o defeito era só na resolução de escopo desses 3. (Validação cruzada que bateu exatamente com o console.)
+
+**Validado:** `node --check` nos 3 + **erro confirmado eliminado pelo usuário** em `/profile`.
+
+⚠️ **Armadilha de teste (importante):** os erros persistiram após o fix por **cache do browser** — o `?v=2.0.0-beta.1` não muda, então o Ctrl+Shift+R não bastou. O diagnóstico decisivo foi o **número da linha**: o browser reportava 1189 (pré-fix), mas o arquivo corrigido tem o `init` na **1197**. *Sempre conferir o número da linha antes de concluir que o fix falhou.*
+
+## 3. Sincronização completa — protocolo oficial seguido
+
+`-hard` → `-pkg` → `-bs`/`-tw` → `-docs` → `-ai`
+
+| Repo | Commit | Nota |
+|---|---|---|
+| `-hard` (fonte) | **01c81e4** | origem do fix |
+| `-pkg` | **6780a1f** | espelho byte-idêntico restaurado (`diff -rq` = 0) |
+| `-bs` | **bb7f6a5** | `public/` idêntico ao `-hard` |
+| `-tw` | **2e4deff** | `public/` idêntico ao `-hard` |
+| `-docs` | **cf169bb** | changelogs 6.0.1 / 4.0.1 / 4.0.1 |
+| `-ai` | *(este commit)* | lessons-learned + protocolo + handoff |
+
+> Nota de processo: a primeira tentativa sincronizou `-bs`/`-tw` **direto do `-hard`, pulando o `-pkg`** — o que deixou o pacote divergente. Como o release sai do pacote, o `2.0.0` teria saído **com o bug**. Corrigido na mesma sessão e o protocolo foi endurecido (ver §4).
+
+## 4. Protocolo de sincronização atualizado (`prompts/sincronizar.md`)
+
+- Passou a incluir o **`-tw`** (o doc só conhecia o `dev-bs`).
+- Distinguidos **tipo A (release)** × **tipo B (patch por plugin)** — o nosso caso era B, e o checklist antigo assumia sempre A.
+- Passo 2 (`-pkg`) marcado como **obrigatório**, com verificação do espelho no checklist final.
+- Alerta sobre a cópia `vendor/` dos sandboxes (ver pendência 2).
+
+## 5. ✅ A1 do corte — PRÉ-VERIFICADO
+
+O re-grep do host inteiro (item 1 do corte, §7 da sessão 19/07) já está feito: **o host está limpo de rede v1**.
+
+- `.on('ozi:` → **zero**
+- `removeData('ozi-` → só um **comentário**
+- **todos** os listeners de `ozi:change` em formato v2 (`e.detail` / Alpine `$event.detail`)
+- superfície de API OZI no host = **3 chamadas** (`OziSelect.get` ×2, `OziSelect.init` ×1) — todas verificadas seguras (chave string e `querySelector` → Element)
+
+## 6. 🚧 Pendências e decisões do arquiteto
+
+1. **Versão do pacote** — publicar `2.0.0-beta.2` para o piloto receber o fix pela via real (Composer), ou levar direto no corte `2.0.0`? Hoje o piloto só tem o fix por **cópia manual** em `public/plugins`, que por isso diverge do `vendor/`. `composer.json` do `-pkg` **continua `2.0.0-beta.1`** (não alterei).
+2. **`vendor/` dos sandboxes está em v1** — `select 5.0.2`, `audio 3.0.2`, composer `1.0.0` (bs) / `1.0.7` (tw), enquanto `public/` está v2. **Pré-existente**, desde a sync de 18/07 (que só fez `public/`). Decidir: sincronizar a árvore toda ou deixar consistente — **não misturar** v2 solto dentro de árvore v1.
+3. **Bug do `lang`** (cosmético, **não bloqueia** o piloto) — `[OZI:lang] t("select.valuePlaceholder"): chave nao encontrada em "en" nem "en"`. Causa: `OziAssets.php:98` faz `OziLang.init(_c.lang || "en", _c.fallbackLang || "en")` lendo `OZI.conf` **no boot imediato**, mas o host chama `oziConf({lang:'pt-BR'})` **depois** do `@oziScripts` (app.blade.php: 61 vs 66) → conf vazia → `en`/`en`. Decidir onde/como configurar o lang (antes do boot, ou fazer `oziConf` re-inicializar o lang).
+4. **Push pendente** — **6 commits locais** não pushados: `-ai`, `-docs`, `-hard`, `-bs`, `-tw`, `-pkg`.
+
+## ⏳ Retomar por aqui (próxima sessão)
+
+1. Decidir as pendências **1** e **3** acima (a 2 pode esperar).
+2. Piloto: testar **página 2** (`empresa/vagas/{id}/candidates` — filtro de badges) e **página 3** (`revenda/empresa/form` — `plano_token`).
+3. Aceite do piloto verde → **corte** (§7 da sessão 19/07): **A1 já está feito ✅**, falta plugin `2.0.0`, host `^2.0`, remover a rede v1 (guard tem que ir a 0), docs → `genesis/`.
+4. Sugestão registrada na lição: criar um aceite que simule `OZI.hooks.afterRender.run()` **sem root** — teria pegado este bug.
 
 ---
 
