@@ -1,5 +1,5 @@
 # OZI-UI — Handoff de Sessão
-**idDoc:** handoff-current | **Versão:** 1.8 | **Data:** 2026-07-23 (trabalho/C:) — F5-B Estágio 2: **🎉 PILOTO VERDE no host real** (`distribuidora/revenda/create`, console limpo, boot único, `ozi:change` migrados OK). **3 bugs do v2 validados no host:** (1) `lang`-OziAssets (`-pkg 7dd871a`); (2) `ozi-auth` 4.0.1 i18n, caçado na revenda (`-hard c4ae1fb`/`-pkg 9299c1e`/`-docs 5add4ce`); (3) `init(document)` (`-pkg 6780a1f`) — reapareceu no piloto porque o `beta.1` publicado é PRÉ-fix; resolvido publicando a fonte dev-hard por cima. **Todos commitados/pushados nos repos do plugin; nenhum bug de plugin aberto.** Piloto montado MANUAL no working tree do `master` + overlays no `vendor` — **sem commit, frágil** (§7). **DECISÃO MADURA:** publicar **`2.0.0-beta.2`** (dissolve os overlays via `composer update`) ou ir ao **corte `2.0.0`**. Bug do host à parte (`password_confirmation`). Ver §SESSÃO 2026-07-23.
+**idDoc:** handoff-current | **Versão:** 1.8 | **Data:** 2026-07-23 (trabalho/C:) — F5-B Estágio 2: **🎉 PILOTO VERDE no host real** (`distribuidora/revenda/create`, console limpo, boot único, `ozi:change` migrados OK). **3 bugs do v2 validados no host:** (1) `lang`-OziAssets (`-pkg 7dd871a`); (2) `ozi-auth` 4.0.1 i18n, caçado na revenda (`-hard c4ae1fb`/`-pkg 9299c1e`/`-docs 5add4ce`); (3) `init(document)` (`-pkg 6780a1f`) — reapareceu no piloto porque o `beta.1` publicado é PRÉ-fix; resolvido publicando a fonte dev-hard por cima. **Todos commitados/pushados nos repos do plugin; nenhum bug de plugin aberto.** Depois: **`2.0.0-beta.2` publicado** no Packagist (`-pkg c178acd` + tag) e **host `centralrh12` migrado+commitado+pushado** via `composer require beta.2` (`master 9b69084`, projeto descontinuado). **FALTAM 2 ENTREGAS pro lançamento v2:** (1) **website** oziui.com — só existe no E:/casa, atualizar p/ v2 + rebuild `public/build` + deploy; (2) **lançamento = corte `2.0.0`** (plugin 2.0.0 + tag, remover rede v1/guard→0, docs→genesis). Bug do host à parte (`password_confirmation`). Ver §SESSÃO 2026-07-23 (Retomar).
 
 > Arquivo gravado pela IA ao encerrar cada sessão de trabalho no ozi-ui.
 > Lido no início da sessão seguinte (casa ou trabalho).
@@ -91,13 +91,18 @@ Piloto verde → decisão de **publicar o `beta.2`** (dissolve os overlays manua
 
 **➡️ PASSO DO HOST — JÁ EXECUTADO nesta sessão:** `composer require ozi-ui/core:2.0.0-beta.2` (vendor limpo) + commit/push `master 9b69084`. O host `centralrh12` (descontinuado) está oficializado no beta.2. Nada pendente lá.
 
-## ⏳ Retomar por aqui (próxima sessão) — PILOTO PASSOU + beta.2 publicado; falta host limpo → corte
+## ⏳ Retomar por aqui (próxima sessão) — FALTAM 2 ENTREGAS: **website + lançamento**
 
-1. **🎯 DECISÃO CENTRAL (pendência #1, agora madura):** o piloto verde comprova que os 3 fixes (init, lang-OziAssets, auth-i18n) funcionam no host real. Mas **todos vivem só nos repos do plugin + overlays manuais no vendor** — o release `beta.1` não os tem. Caminho limpo: **publicar `2.0.0-beta.2`** (`-pkg`: bump `composer.json` beta.1→beta.2 + tag + push → Packagist) e o host faz `composer update` (dissolve todos os overlays manuais pela via real). OU ir direto ao **corte `2.0.0`** (§7 da sessão 19/07). O `beta.2` já foi "ensaiado" no cache-bust do vendor.
-2. **Fixes commitados/pushados nos repos do plugin** (prontos p/ virar beta.2): init `-pkg 6780a1f`, lang-OziAssets `-pkg 7dd871a`, auth-i18n `-pkg 9299c1e` (+ `-hard`/`-docs`). **Nenhum bug de plugin em aberto.**
-3. **Opcional:** re-testar a **pág.2** (`candidate-list`, filtro de badges) agora que o host roda v2 de verdade — antes só foi testada no `master`/v1. E o bug do HOST `password_confirmation` (§6) fica pro dev do Central RH.
-4. **Corte** (§7 da sessão 19/07): **A1 já feito ✅**, plugin `2.0.0`, host `^2.0`, remover rede v1 (guard → 0), docs → `genesis/`.
-5. Pendência 2 do handoff v1.6 (`vendor/` dos sandboxes em v1) segue aberta — baixa prioridade, decidir junto do corte.
+> Estado: **3 bugs fechados ✅ · piloto verde ✅ · `2.0.0-beta.2` publicado ✅ · host migrado+commitado ✅**. Nenhum bug de plugin aberto. O que falta pro **lançamento da v2**:
+
+1. **🌐 WEBSITE (`ozi-ui-website` / oziui.com) — SÓ EXISTE NO E: (casa), não no C:.** Não mexível desta máquina. Precisa: atualizar apresentação/funcionalidades e as instruções de uso p/ **v2** (JS puro, zero jQuery; `@oziScripts`; eventos por `addEventListener`+`e.detail`; copy/paste → receitas Alpine); snippet de instalação com a versão nova; **rebuild do `public/build`** (commitado no git — KingHost não tem Node/Composer) e deploy. Fonte de conteúdo: `ozi-ui-docs/dev/_meta/guia-migracao-v1-v2.md` + `contrato-v2.md`.
+2. **🚀 LANÇAMENTO = corte `2.0.0`** (§7 da sessão 19/07 tem a sequência; **A1 já feito ✅**):
+   - `-pkg`: `composer.json` `beta.2`→**`2.0.0`** + tag `v2.0.0` + push → Packagist (sub-decisão em aberto: destino do `master` do pacote — virar v2 e arquivar v1, ou manter v1 em paralelo; tag `v1-final` já existe).
+   - **Remover a rede v1:** shims/aliases `zld` + grupo `shims-v1` + bridge `zldHooks→OZI.hooks` — **guard `check-camadas.sh` tem que ir a 0** (arquivar `ozi-copy`/`ozi-paste`).
+   - **Docs:** `fases-implantacao-v2` → F5-B/corte concluídos; mover roadmap v2 `horizonte/roadmap/` → `genesis/`; registrar decisão do corte em `decisions.md` (#21?).
+   - **Website** (item 1) entra aqui — o anúncio público da v2 depende dele.
+   - *(Host `centralrh12` já está no beta.2; no corte, subir p/ `^2.0` se for reativado — mas foi descontinuado.)*
+3. **Opcional/baixa prioridade:** re-testar pág.2 (`candidate-list`, filtro de badges) no host v2; bug do HOST `password_confirmation` (§6, dev do Central RH); pendência 2 do handoff v1.6 (`vendor/` dos sandboxes em v1).
 
 ---
 
