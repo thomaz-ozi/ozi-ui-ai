@@ -79,7 +79,7 @@ Depois de trazer o piloto v2 para o **working tree do `master`** (o usuário opt
 4. **Armadilha B:** os assets publicados do `pilot-v2`/`beta.1` são PRÉ-fix do `init(document)` — `select 6.0.0`/`autocomplete 4.0.0`/`audio 4.0.0`, DOMException na linha **1189** (o fix está na 1197). **Fix:** `cp -r dev-hard/public/plugins/ozi-ui/. → host` (publish da fonte atual: select **6.0.1**, autocomplete/audio **4.0.1**, auth **4.0.1**).
 5. **Armadilha C (cache):** o `?v` não muda entre builds → risco do cache velho (o handoff v1.6 já avisava). **Fix:** bump `vendor/ozi-ui/core/composer.json` `version` → **`2.0.0-beta.2`** (só cache-bust) → força refetch de tudo.
 
-**⚠️ ESTADO DO HOST AGORA — frágil e não-oficial:** `master` com working tree = piloto v2 (uncommitted) + **`vendor/` editado à mão** (OziAssets do `-pkg`, assets do dev-hard, `composer.json` version=beta.2). **Nada disso sobrevive a um `composer install`/`update`** — seria sobrescrito pelo release. É prova-de-conceito, não deploy. Reverter p/ v1 pristina: `git reset --hard origin/master` + `composer install`.
+**⚠️ ESTADO DO HOST — RESOLVIDO E COMMITADO (atualização):** os overlays manuais foram **dissolvidos pela via limpa** — `composer require ozi-ui/core:2.0.0-beta.2` (Packagist já servia) trocou o `vendor/` pelo release real (que já tem os 3 fixes). Depois **commitado + pushado**: `centralrh12` **`master` `9b69084`** (`3b32676..9b69084` em `github.com/oswaldopaulo/centralrh12`) — `composer 1.0.7→2.0.0-beta.2` + boot único + 2 `ozi:change` migrados + workaround removido + assets v2. **Decisão do usuário:** o `centralrh12` foi **descontinuado**, então o commit no `master` é registro interno ("critério nosso"), sem receio de produção. `vendor/` é gitignored (não entrou). **O conselho antigo de `reset --hard` está SUPERADO** — o host já está oficializado no beta.2.
 
 ## 8. 🚀 `2.0.0-beta.2` PUBLICADO (decisão do usuário: via limpa antes do corte)
 
@@ -89,12 +89,7 @@ Piloto verde → decisão de **publicar o `beta.2`** (dissolve os overlays manua
 - **⏳ Packagist:** logo após o push ainda servia só `beta.1`+`1.0.7` (cache de CDN / lag do webhook). **Conferir** `repo.packagist.org/p2/ozi-ui/core.json`; se não aparecer, dar "Update" manual em `packagist.org/packages/ozi-ui/core`.
 - O `beta.2` traz os 3 fixes: init `6780a1f` + lang-OziAssets `7dd871a` + auth-i18n `9299c1e`. O `resolveVersion()` do OziAssets lê o `composer.json` → o `?v` vira `2.0.0-beta.2` sozinho (o cache-bust manual deixa de ser hack).
 
-**➡️ PASSO DO HOST (quando o Packagist servir o beta.2):** na sessão do `centralrh12`, com DB up:
-```
-git reset --hard origin/master        # descarta os overlays manuais do piloto
-composer require ozi-ui/core:2.0.0-beta.2   # vendor limpo no beta.2
-```
-Depois re-aplicar as mudanças de blade do piloto (via `pilot-v2` / cherry-pick) + publicar assets (`vendor:publish` ou cópia) + `view:clear`. Aí o piloto roda **sem nenhum overlay manual** — validação final antes do corte.
+**➡️ PASSO DO HOST — JÁ EXECUTADO nesta sessão:** `composer require ozi-ui/core:2.0.0-beta.2` (vendor limpo) + commit/push `master 9b69084`. O host `centralrh12` (descontinuado) está oficializado no beta.2. Nada pendente lá.
 
 ## ⏳ Retomar por aqui (próxima sessão) — PILOTO PASSOU + beta.2 publicado; falta host limpo → corte
 
