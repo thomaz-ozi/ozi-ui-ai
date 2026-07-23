@@ -1,5 +1,5 @@
 # OZI-UI — Handoff de Sessão
-**idDoc:** handoff-current | **Versão:** 1.7 | **Data:** 2026-07-23 (trabalho/C:) — F5-B Estágio 2: **os DOIS bugs do v2 fechados**. O `init(document)` já estava (`01c81e4`/`6780a1f`); o **`lang`** (escrito 21/07, sem commit) foi **verificado por teste de controle, commitado E pushado** nos 3 repos (`-pkg 7dd871a`, `-docs 6544e4f`, `-ai 68b5ea7`). **Zero pendência de git nesta máquina.** Faltam (não-bugs): decisão da versão do pacote (como o fix do `lang` chega ao piloto: `beta.2` × corte) e as páginas 2/3 do piloto. Ver §SESSÃO 2026-07-23.
+**idDoc:** handoff-current | **Versão:** 1.7 | **Data:** 2026-07-23 (trabalho/C:) — F5-B Estágio 2. **3 bugs mexidos hoje:** (1) `lang` do `OziAssets` (dicionário não carregado pelo `@oziScripts`) — verificado + commit + push (`-pkg 7dd871a`); (2) **`ozi-auth` 4.0.1** — 5 chaves de lang faltando, caçado pelo piloto na revenda, corrigido na fonte + espelho + doc, commit + push (`-hard c4ae1fb`, `-pkg 9299c1e`, `-docs 5add4ce`); (3) `init(document)` já estava fechado. **Zero pendência de git.** ⚠️ **Piloto sendo testado no `master` (boot duplo falso) — o correto é `pilot-v2`** (§4). Bug do host à parte (`password_confirmation` no `distribuidora.revenda.edit`). Faltam (não-bugs): decisão `beta.2` × corte e refazer pág.2/3 no `pilot-v2`. Ver §SESSÃO 2026-07-23.
 
 > Arquivo gravado pela IA ao encerrar cada sessão de trabalho no ozi-ui.
 > Lido no início da sessão seguinte (casa ou trabalho).
@@ -49,7 +49,26 @@ O usuário testou a **página 2** (`empresa/vagas/{id}/candidates`) e reportou "
 
 **Ruído do host a ignorar no console:** fontes Poppins (sanitizer), `NS_ERROR_UNEXPECTED` do TinyMCE, `toastr.min.js.map` 404 — nada disso é do ozi.
 
-## ⏳ Retomar por aqui (próxima sessão) — nenhum bug aberto; falta piloto + decisão
+## 5. 🐛 Bug REAL do plugin caçado no piloto (revenda) — `ozi-auth` 4.0.1 (i18n)
+
+Testando `revenda/empresa/form` (edit + add), o console mostrou `[OZI:lang] t("auth.remaining"): chave nao encontrada em "pt-BR" nem "en"`. **Diferente do bug do `lang` de 21/07:** ali o dicionário não era carregado (`@oziScripts`); aqui o locale está certo (pt-BR ativo, dict carregado) mas **a chave não existe no dicionário**.
+
+**Auditoria (fonte dev-hard):** o `ozi-auth.js` referencia **5 chaves** via `_t()` que **não estavam** em nenhum dos 3 dicionários — caíam no fallback PT embutido (funcionava, mas `en`/`es` viam português + console avisava): `auth.mailRequired` (js:193), `auth.remaining` (448), `auth.exceeded` (450), `auth.summaryValid` (473), `auth.summaryInvalid` (353/474). Resíduo da migração v4.0.0.
+
+**Fix + sync (protocolo `-hard → -pkg → -docs`; bs/tw não existem no C:):**
+| Repo | Commit | Push |
+|---|---|---|
+| `-hard` (fonte) | **c4ae1fb** | ✅ `v2` |
+| `-pkg` (espelho byte-idêntico) | **9299c1e** | ✅ `v2` |
+| `-docs` (changelog auth) | **5add4ce** | ✅ `master` |
+
+`ozi-auth` **4.0.0 → 4.0.1** (só lang, JS sem mudança de lógica). Verificado: `node --check` limpo, re-auditoria referenciadas × definidas = **0 faltando** nos 3 locales. Nota: `auth.userMin` segue **definido-mas-não-referenciado** (chave morta, inócua). **Ainda não propagado ao publicado do host** — pra ver sumir no piloto, depende do `beta.2`/corte (ou cópia manual dos 3 dicts).
+
+## 6. Bug do HOST (não é do ozi) — anotar pro Central RH
+
+`revenda edit`: `Livewire: wire:model="password_confirmation" property does not exist on component: [distribuidora.revenda.edit]`. O blade tem `wire:model.defer="password_confirmation"` mas o componente Livewire não declara a propriedade. O `data-ozi-auth-confirm` é só validação client-side do ozi-auth — o `wire:model` é fiação do host. Erraria igual na v1. **Fica pro dev do Central RH** (sessão `centralrh12`), não é regressão da v2.
+
+## ⏳ Retomar por aqui (próxima sessão) — nenhum bug de plugin aberto; falta piloto + decisão
 
 1. **Decisão de arquiteto (pendência #1):** como o fix do `lang` chega ao piloto? O `vendor` do `centralrh12` roda `2.0.0-beta.1` **sem** o fix. Opções: publicar `2.0.0-beta.2` (piloto recebe via `composer update`), ou levar no **corte** `2.0.0`. Até lá o piloto não tem o fix do `lang` (mas é **cosmético**, não bloqueia).
 2. **Piloto — ⚠️ ANTES DE TUDO: `git switch -c pilot-v2 origin/pilot-v2`** (não há branch local; testar no `master` dá boot duplo falso — ver §4). DB up + `php artisan serve` (usa `:8080`) + `composer install` se o vendor não estiver no `beta.1` + `php artisan view:clear`. Terminar o teste interativo: **pág.2 refazer** (`empresa/vagas/{id}/candidates`, filtro de badges) + pág.3 (`revenda/empresa/form`, `plano_token`). **Aceite:** `registerPlugin já registrado` + `copy` **sumirem** (boot único). Rodar pela sessão do `centralrh12` (protocolo).
