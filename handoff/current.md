@@ -35,10 +35,24 @@ A sessão de 21/07 (trabalho/C:) escreveu o fix do `lang` mas **não commitou**.
 
 Os 6 commits que o handoff v1.6 (casa/E:) listava como "não pushados" **já estavam no origin** nesta máquina (C:) — só os 3 do `lang` estavam pendentes aqui. **Os 3 repos em sync com origin.** (Não toquei `-hard`/`-bs`/`-tw` — nada mudou neles.)
 
+## 4. ⚠️ Piloto pág.2 testado na BRANCH ERRADA (`master`, não `pilot-v2`) — falso "console limpo"
+
+O usuário testou a **página 2** (`empresa/vagas/{id}/candidates`) e reportou "nada anormal", mas o console tinha o sintoma do **boot duplo**: `[OZI:integrations] registerPlugin: "X" já registrado.` para os 9 plugins **duas vezes**, com **`copy`** entre eles.
+
+**Diagnóstico (verificado no host `C:/.../centralrh/centralrh12`):**
+- O checkout estava no **`master`** (working tree limpo), **não** no `pilot-v2`. Só existe `origin/pilot-v2` (HEAD `54ef4dd`) — **sem branch local**.
+- No `master`: `app.blade.php:61` tem `@oziScripts` **E** `footer-vendor-scripts.blade.php:21` ainda carrega `<script src=".../ozi.js" data-navigate-once>` (auto-boot) → **boot duplo**. O `copy` aparece porque o auto-boot do `ozi.js` carrega tudo do `_pluginMap` publicado (que ainda tem copy) — o `@oziScripts` (v2) não emite copy.
+- O plugin **publicado no disco já é v2** (`public/plugins/ozi-ui/core/` tem `ozi-integrations/ozi-hooks/ozi-lang`), daí as mensagens serem no formato v2.
+- **`origin/pilot-v2` corrige** (confirmado): footer sem `ozi.js` (comentário `{{-- boot único --}}`), `oziConf` movido p/ o `app.blade.php` depois do `@oziScripts`, os 2 `ozi:change` migrados, workaround removido, `composer 2.0.0-beta.1`.
+
+**Conclusão:** não voltou **nenhum bug do plugin** — o sintoma é wiring do host já resolvido no `pilot-v2`. O teste da pág.2 **não vale**; refazer no `pilot-v2`.
+
+**Ruído do host a ignorar no console:** fontes Poppins (sanitizer), `NS_ERROR_UNEXPECTED` do TinyMCE, `toastr.min.js.map` 404 — nada disso é do ozi.
+
 ## ⏳ Retomar por aqui (próxima sessão) — nenhum bug aberto; falta piloto + decisão
 
 1. **Decisão de arquiteto (pendência #1):** como o fix do `lang` chega ao piloto? O `vendor` do `centralrh12` roda `2.0.0-beta.1` **sem** o fix. Opções: publicar `2.0.0-beta.2` (piloto recebe via `composer update`), ou levar no **corte** `2.0.0`. Até lá o piloto não tem o fix do `lang` (mas é **cosmético**, não bloqueia).
-2. **Piloto (branch `pilot-v2` do `centralrh12`, DB up + `php artisan serve`):** terminar o teste interativo — página 2 (`empresa/vagas/{id}/candidates`, filtro de badges) e página 3 (`revenda/empresa/form`, `plano_token`); pegar os DEMAIS erros de console.
+2. **Piloto — ⚠️ ANTES DE TUDO: `git switch -c pilot-v2 origin/pilot-v2`** (não há branch local; testar no `master` dá boot duplo falso — ver §4). DB up + `php artisan serve` (usa `:8080`) + `composer install` se o vendor não estiver no `beta.1` + `php artisan view:clear`. Terminar o teste interativo: **pág.2 refazer** (`empresa/vagas/{id}/candidates`, filtro de badges) + pág.3 (`revenda/empresa/form`, `plano_token`). **Aceite:** `registerPlugin já registrado` + `copy` **sumirem** (boot único). Rodar pela sessão do `centralrh12` (protocolo).
 3. **Aceite do piloto verde → corte** (§7 da sessão 19/07): **A1 já feito ✅**, plugin `2.0.0`, host `^2.0`, remover rede v1 (guard → 0), docs → `genesis/`.
 4. Pendência 2 do handoff v1.6 (`vendor/` dos sandboxes em v1) segue aberta — baixa prioridade, decidir junto do corte.
 
