@@ -1,8 +1,46 @@
 # OZI-UI — Handoff de Sessão
-**idDoc:** handoff-current | **Versão:** 1.6 | **Data:** 2026-07-20 (casa/E:) — F5-B Estágio 2: **BUG REAL do v2 caçado pelo piloto, corrigido e sincronizado nos 4 repos**. `DOMException` em `init(document)` (select/autocomplete/audio) que **nenhum dos 18 aceites headless pegou** — só aparece com `ozi-hooks` + `wire:navigate`. Erro confirmado eliminado no host. **A1 do corte pré-verificado.** Faltam: decisão da versão do pacote, páginas 2/3 do piloto, e o `lang` (cosmético). Ver §SESSÃO 2026-07-20.
+**idDoc:** handoff-current | **Versão:** 1.7 | **Data:** 2026-07-23 (trabalho/C:) — F5-B Estágio 2: **os DOIS bugs do v2 fechados**. O `init(document)` já estava (`01c81e4`/`6780a1f`); o **`lang`** (escrito 21/07, sem commit) foi **verificado por teste de controle, commitado E pushado** nos 3 repos (`-pkg 7dd871a`, `-docs 6544e4f`, `-ai 68b5ea7`). **Zero pendência de git nesta máquina.** Faltam (não-bugs): decisão da versão do pacote (como o fix do `lang` chega ao piloto: `beta.2` × corte) e as páginas 2/3 do piloto. Ver §SESSÃO 2026-07-23.
 
 > Arquivo gravado pela IA ao encerrar cada sessão de trabalho no ozi-ui.
 > Lido no início da sessão seguinte (casa ou trabalho).
+
+---
+
+# SESSÃO 2026-07-23 (trabalho/C:) — Fechamento dos 2 bugs do v2 (lang verificado + commit + push)
+
+> Sessão curta e cirúrgica. `/session-start` → "vamos terminar os bugs". **Nenhum código novo** — o fix do `lang` já existia (sessão 21/07, uncommitted); esta sessão **verificou, commitou e pushou**.
+
+## 1. Estado achado — 3 peças do bug do `lang` largadas sem commit (sessão 21/07)
+
+A sessão de 21/07 (trabalho/C:) escreveu o fix do `lang` mas **não commitou**. Achado em 3 repos, todas coerentes entre si:
+- **`-pkg`** `src/OziAssets.php` (o código) · **`-docs`** `dev/core/ozi-ui/changelog.md` (entrada) · **`-ai`** `logs/lessons-learned.md` (a lição).
+
+## 2. ✅ Bug do `lang` — VERIFICADO (teste de controle) e fechado
+
+**Natureza (recap):** cosmético — `[OZI:lang] t("select.valuePlaceholder"): chave nao encontrada em "en" nem "en"`. **Duas causas empilhadas:** (1) `immediateBoot` roda no HEAD e inicializa `OziLang` com conf vazia; o host chama `oziConf({lang})` **depois** do `@oziScripts` e o `oziConf` só fazia `OziConf.apply()`; (2) `@oziScripts` **não passa pelo `ozi-loader`** → nenhum dicionário de plugin era registrado (só `_baseDicts`).
+
+**Fix (em `OziAssets.php`, vive SÓ no `-pkg`):** `oziConf()` re-inicializa o `OziLang` quando recebe `lang`/`fallbackLang`; novo `$availableLangs` + `resolveLocale()` (deriva do `app()->getLocale()`, normaliza p/ `pt-BR`/`en`/`es`); os `<script>` de dicionário saem **após o `immediateBoot`** (onde `OZI.lang` passa a existir) e **antes** dos plugins. Fica **fora** do `$availableScripts` de propósito (o `ozi:check` descarta `{lang}`).
+
+**Verificação (o método que a própria lição prega — teste de controle):** harness PHP stubando `asset()`/`app()`/`public_path()`, renderizando `scripts()`. **28 checks PASS:** `resolveLocale` nos 5+ casos (`pt_BR`→`pt-BR`, `pt-PT`→`pt-BR`, `fr`→`en`, …), emissão dos 8 dicionários em `pt-BR`, **escopo por plugin** (`scripts(['auth'])` traz `shared`+`auth`, não select), **ordem** `immediateBoot < dicts < plugins`, copy/paste **excluídos**, locale `es`. `php -l` limpo. (Harness no scratchpad, descartável.)
+
+**Confirmado também:** o `init(document)` do §SESSÃO 2026-07-20 já estava fechado/sincronizado — nenhuma ação a mais.
+
+## 3. Commit + push (a pedido do usuário, nesta ordem)
+
+| Repo | Commit | Branch | Push |
+|---|---|---|---|
+| `-pkg` | **7dd871a** | `v2` | `6780a1f..7dd871a` ✅ |
+| `-docs` | **6544e4f** | `master` | `b4c4574..6544e4f` ✅ |
+| `-ai` | **68b5ea7** | `main` | `9a2b5da..68b5ea7` ✅ |
+
+Os 6 commits que o handoff v1.6 (casa/E:) listava como "não pushados" **já estavam no origin** nesta máquina (C:) — só os 3 do `lang` estavam pendentes aqui. **Os 3 repos em sync com origin.** (Não toquei `-hard`/`-bs`/`-tw` — nada mudou neles.)
+
+## ⏳ Retomar por aqui (próxima sessão) — nenhum bug aberto; falta piloto + decisão
+
+1. **Decisão de arquiteto (pendência #1):** como o fix do `lang` chega ao piloto? O `vendor` do `centralrh12` roda `2.0.0-beta.1` **sem** o fix. Opções: publicar `2.0.0-beta.2` (piloto recebe via `composer update`), ou levar no **corte** `2.0.0`. Até lá o piloto não tem o fix do `lang` (mas é **cosmético**, não bloqueia).
+2. **Piloto (branch `pilot-v2` do `centralrh12`, DB up + `php artisan serve`):** terminar o teste interativo — página 2 (`empresa/vagas/{id}/candidates`, filtro de badges) e página 3 (`revenda/empresa/form`, `plano_token`); pegar os DEMAIS erros de console.
+3. **Aceite do piloto verde → corte** (§7 da sessão 19/07): **A1 já feito ✅**, plugin `2.0.0`, host `^2.0`, remover rede v1 (guard → 0), docs → `genesis/`.
+4. Pendência 2 do handoff v1.6 (`vendor/` dos sandboxes em v1) segue aberta — baixa prioridade, decidir junto do corte.
 
 ---
 
