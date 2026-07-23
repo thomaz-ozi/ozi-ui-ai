@@ -81,7 +81,22 @@ Depois de trazer o piloto v2 para o **working tree do `master`** (o usuário opt
 
 **⚠️ ESTADO DO HOST AGORA — frágil e não-oficial:** `master` com working tree = piloto v2 (uncommitted) + **`vendor/` editado à mão** (OziAssets do `-pkg`, assets do dev-hard, `composer.json` version=beta.2). **Nada disso sobrevive a um `composer install`/`update`** — seria sobrescrito pelo release. É prova-de-conceito, não deploy. Reverter p/ v1 pristina: `git reset --hard origin/master` + `composer install`.
 
-## ⏳ Retomar por aqui (próxima sessão) — PILOTO PASSOU; decisão do corte × beta.2
+## 8. 🚀 `2.0.0-beta.2` PUBLICADO (decisão do usuário: via limpa antes do corte)
+
+Piloto verde → decisão de **publicar o `beta.2`** (dissolve os overlays manuais do host pela via real do Composer). Feito no `-pkg`:
+- `composer.json` `version` **beta.1 → beta.2** (JSON validado); commit **c178acd**; tag anotada **`v2.0.0-beta.2`**.
+- **Push OK:** branch `v2` + tag → `github.com/thomaz-ozi/ozi-ui`. **`-pkg` = espelho completo do `dev-hard`** (única diferença: `themes/_template/template-theme.css`, resíduo mal-nomeado que NÃO deve entrar em release — `-pkg` correto sem ele).
+- **⏳ Packagist:** logo após o push ainda servia só `beta.1`+`1.0.7` (cache de CDN / lag do webhook). **Conferir** `repo.packagist.org/p2/ozi-ui/core.json`; se não aparecer, dar "Update" manual em `packagist.org/packages/ozi-ui/core`.
+- O `beta.2` traz os 3 fixes: init `6780a1f` + lang-OziAssets `7dd871a` + auth-i18n `9299c1e`. O `resolveVersion()` do OziAssets lê o `composer.json` → o `?v` vira `2.0.0-beta.2` sozinho (o cache-bust manual deixa de ser hack).
+
+**➡️ PASSO DO HOST (quando o Packagist servir o beta.2):** na sessão do `centralrh12`, com DB up:
+```
+git reset --hard origin/master        # descarta os overlays manuais do piloto
+composer require ozi-ui/core:2.0.0-beta.2   # vendor limpo no beta.2
+```
+Depois re-aplicar as mudanças de blade do piloto (via `pilot-v2` / cherry-pick) + publicar assets (`vendor:publish` ou cópia) + `view:clear`. Aí o piloto roda **sem nenhum overlay manual** — validação final antes do corte.
+
+## ⏳ Retomar por aqui (próxima sessão) — PILOTO PASSOU + beta.2 publicado; falta host limpo → corte
 
 1. **🎯 DECISÃO CENTRAL (pendência #1, agora madura):** o piloto verde comprova que os 3 fixes (init, lang-OziAssets, auth-i18n) funcionam no host real. Mas **todos vivem só nos repos do plugin + overlays manuais no vendor** — o release `beta.1` não os tem. Caminho limpo: **publicar `2.0.0-beta.2`** (`-pkg`: bump `composer.json` beta.1→beta.2 + tag + push → Packagist) e o host faz `composer update` (dissolve todos os overlays manuais pela via real). OU ir direto ao **corte `2.0.0`** (§7 da sessão 19/07). O `beta.2` já foi "ensaiado" no cache-bust do vendor.
 2. **Fixes commitados/pushados nos repos do plugin** (prontos p/ virar beta.2): init `-pkg 6780a1f`, lang-OziAssets `-pkg 7dd871a`, auth-i18n `-pkg 9299c1e` (+ `-hard`/`-docs`). **Nenhum bug de plugin em aberto.**
