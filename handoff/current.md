@@ -42,7 +42,7 @@ O usuário testou a **página 2** (`empresa/vagas/{id}/candidates`) e reportou "
 **Diagnóstico (verificado no host `C:/.../centralrh/centralrh12`):**
 - O checkout estava no **`master`** (working tree limpo), **não** no `pilot-v2`. Só existe `origin/pilot-v2` (HEAD `54ef4dd`) — **sem branch local**.
 - No `master`: `app.blade.php:61` tem `@oziScripts` **E** `footer-vendor-scripts.blade.php:21` ainda carrega `<script src=".../ozi.js" data-navigate-once>` (auto-boot) → **boot duplo**. O `copy` aparece porque o auto-boot do `ozi.js` carrega tudo do `_pluginMap` publicado (que ainda tem copy) — o `@oziScripts` (v2) não emite copy.
-- O plugin **publicado no disco já é v2** (`public/plugins/ozi-ui/core/` tem `ozi-integrations/ozi-hooks/ozi-lang`), daí as mensagens serem no formato v2.
+- **CORREÇÃO (2026-07-23, verificado por versão de arquivo):** o publicado do `master` é **v1 INTEIRO** — `ozi.js 1.0.7`, `select 5.0.2`, `auth 3.0.1`, `autocomplete 3.0.3`. (Eu tinha dito "é v2" olhando só o `core/`, que tem arquivos comuns às duas gerações — ERRADO.) Logo o `registerPlugin já registrado` do `master` é o **boot duplo da v1**, e todo teste feito no `master` foi **da v1** (produção), não do piloto v2. O publicado v2 (4.0.x) vive só no `pilot-v2`.
 - **`origin/pilot-v2` corrige** (confirmado): footer sem `ozi.js` (comentário `{{-- boot único --}}`), `oziConf` movido p/ o `app.blade.php` depois do `@oziScripts`, os 2 `ozi:change` migrados, workaround removido, `composer 2.0.0-beta.1`.
 
 **Conclusão:** não voltou **nenhum bug do plugin** — o sintoma é wiring do host já resolvido no `pilot-v2`. O teste da pág.2 **não vale**; refazer no `pilot-v2`.
@@ -62,7 +62,7 @@ Testando `revenda/empresa/form` (edit + add), o console mostrou `[OZI:lang] t("a
 | `-pkg` (espelho byte-idêntico) | **9299c1e** | ✅ `v2` |
 | `-docs` (changelog auth) | **5add4ce** | ✅ `master` |
 
-`ozi-auth` **4.0.0 → 4.0.1** (só lang, JS sem mudança de lógica). Verificado: `node --check` limpo, re-auditoria referenciadas × definidas = **0 faltando** nos 3 locales. Nota: `auth.userMin` segue **definido-mas-não-referenciado** (chave morta, inócua). **Ainda não propagado ao publicado do host** — pra ver sumir no piloto, depende do `beta.2`/corte (ou cópia manual dos 3 dicts).
+`ozi-auth` **4.0.0 → 4.0.1** (só lang, JS sem mudança de lógica). Verificado: `node --check` limpo, re-auditoria referenciadas × definidas = **0 faltando** nos 3 locales. Nota: `auth.userMin` segue **definido-mas-não-referenciado** (chave morta, inócua). **A mesma lacuna existe na v1** (auth 3.0.1 — foi onde apareceu, pois o teste rodou no `master`/v1; a v1 é congelada, não corrige). **Ainda não propagado ao host:** o `pilot-v2` publica auth **v2 4.0.0** (sem o fix, commitado antes dele) → pra testar, copiar os 4 arquivos v2 (4.0.1) para o publicado do `pilot-v2` **após** o `git switch`, ou levar via `beta.2`/corte.
 
 ## 6. Bug do HOST (não é do ozi) — anotar pro Central RH
 
