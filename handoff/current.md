@@ -1,5 +1,5 @@
 # OZI-UI — Handoff de Sessão
-**idDoc:** handoff-current | **Versão:** 1.7 | **Data:** 2026-07-23 (trabalho/C:) — F5-B Estágio 2. **3 bugs mexidos hoje:** (1) `lang` do `OziAssets` (dicionário não carregado pelo `@oziScripts`) — verificado + commit + push (`-pkg 7dd871a`); (2) **`ozi-auth` 4.0.1** — 5 chaves de lang faltando, caçado pelo piloto na revenda, corrigido na fonte + espelho + doc, commit + push (`-hard c4ae1fb`, `-pkg 9299c1e`, `-docs 5add4ce`); (3) `init(document)` já estava fechado. **Zero pendência de git.** ⚠️ **Piloto sendo testado no `master` (boot duplo falso) — o correto é `pilot-v2`** (§4). Bug do host à parte (`password_confirmation` no `distribuidora.revenda.edit`). Faltam (não-bugs): decisão `beta.2` × corte e refazer pág.2/3 no `pilot-v2`. Ver §SESSÃO 2026-07-23.
+**idDoc:** handoff-current | **Versão:** 1.8 | **Data:** 2026-07-23 (trabalho/C:) — F5-B Estágio 2: **🎉 PILOTO VERDE no host real** (`distribuidora/revenda/create`, console limpo, boot único, `ozi:change` migrados OK). **3 bugs do v2 validados no host:** (1) `lang`-OziAssets (`-pkg 7dd871a`); (2) `ozi-auth` 4.0.1 i18n, caçado na revenda (`-hard c4ae1fb`/`-pkg 9299c1e`/`-docs 5add4ce`); (3) `init(document)` (`-pkg 6780a1f`) — reapareceu no piloto porque o `beta.1` publicado é PRÉ-fix; resolvido publicando a fonte dev-hard por cima. **Todos commitados/pushados nos repos do plugin; nenhum bug de plugin aberto.** Piloto montado MANUAL no working tree do `master` + overlays no `vendor` — **sem commit, frágil** (§7). **DECISÃO MADURA:** publicar **`2.0.0-beta.2`** (dissolve os overlays via `composer update`) ou ir ao **corte `2.0.0`**. Bug do host à parte (`password_confirmation`). Ver §SESSÃO 2026-07-23.
 
 > Arquivo gravado pela IA ao encerrar cada sessão de trabalho no ozi-ui.
 > Lido no início da sessão seguinte (casa ou trabalho).
@@ -68,12 +68,26 @@ Testando `revenda/empresa/form` (edit + add), o console mostrou `[OZI:lang] t("a
 
 `revenda edit`: `Livewire: wire:model="password_confirmation" property does not exist on component: [distribuidora.revenda.edit]`. O blade tem `wire:model.defer="password_confirmation"` mas o componente Livewire não declara a propriedade. O `data-ozi-auth-confirm` é só validação client-side do ozi-auth — o `wire:model` é fiação do host. Erraria igual na v1. **Fica pro dev do Central RH** (sessão `centralrh12`), não é regressão da v2.
 
-## ⏳ Retomar por aqui (próxima sessão) — nenhum bug de plugin aberto; falta piloto + decisão
+## 7. ✅✅ PILOTO VERDE — v2 validada no host real (`distribuidora/revenda/create`)
 
-1. **Decisão de arquiteto (pendência #1):** como o fix do `lang` chega ao piloto? O `vendor` do `centralrh12` roda `2.0.0-beta.1` **sem** o fix. Opções: publicar `2.0.0-beta.2` (piloto recebe via `composer update`), ou levar no **corte** `2.0.0`. Até lá o piloto não tem o fix do `lang` (mas é **cosmético**, não bloqueia).
-2. **Piloto — ⚠️ ANTES DE TUDO: `git switch -c pilot-v2 origin/pilot-v2`** (não há branch local; testar no `master` dá boot duplo falso — ver §4). DB up + `php artisan serve` (usa `:8080`) + `composer install` se o vendor não estiver no `beta.1` + `php artisan view:clear`. Terminar o teste interativo: **pág.2 refazer** (`empresa/vagas/{id}/candidates`, filtro de badges) + pág.3 (`revenda/empresa/form`, `plano_token`). **Aceite:** `registerPlugin já registrado` + `copy` **sumirem** (boot único). Rodar pela sessão do `centralrh12` (protocolo).
-3. **Aceite do piloto verde → corte** (§7 da sessão 19/07): **A1 já feito ✅**, plugin `2.0.0`, host `^2.0`, remover rede v1 (guard → 0), docs → `genesis/`.
-4. Pendência 2 do handoff v1.6 (`vendor/` dos sandboxes em v1) segue aberta — baixa prioridade, decidir junto do corte.
+Depois de trazer o piloto v2 para o **working tree do `master`** (o usuário optou por "mesma branch", não criar `pilot-v2` local) e resolver **3 armadilhas de propagação em sequência**, o console ficou **limpo** (só sobra ruído do host: Poppins + toastr 404). Os 3 bugs do v2 validados no host real, boot único, `ozi:change` migrados funcionando.
+
+**Como o piloto foi montado no `master` (tudo MANUAL, working tree, SEM commit):**
+1. `git checkout origin/pilot-v2 -- .` → traz os 44 arquivos do piloto (assets v2 + blades boot-único + `composer.json/lock` beta.1) sobre o `master`. (Sem deleções entre as versões → fiel.)
+2. `composer install` (DB up) → `vendor/ozi-ui/core` **1.0.7 → 2.0.0-beta.1**.
+3. **Armadilha A:** o release `beta.1` é ANTIGO — não tem o fix do `lang` do `OziAssets` (commitado no `-pkg 7dd871a`, nunca publicado). Sem ele o `@oziScripts` não emite os dicts → `auth.remaining`/`lang` voltariam. **Fix:** overlay do `OziAssets.php` corrigido (`-pkg`) → `vendor/ozi-ui/core/src/OziAssets.php`. (`resolveLocale` do host = `pt_BR`→`pt-BR`, casa com o `oziConf`.)
+4. **Armadilha B:** os assets publicados do `pilot-v2`/`beta.1` são PRÉ-fix do `init(document)` — `select 6.0.0`/`autocomplete 4.0.0`/`audio 4.0.0`, DOMException na linha **1189** (o fix está na 1197). **Fix:** `cp -r dev-hard/public/plugins/ozi-ui/. → host` (publish da fonte atual: select **6.0.1**, autocomplete/audio **4.0.1**, auth **4.0.1**).
+5. **Armadilha C (cache):** o `?v` não muda entre builds → risco do cache velho (o handoff v1.6 já avisava). **Fix:** bump `vendor/ozi-ui/core/composer.json` `version` → **`2.0.0-beta.2`** (só cache-bust) → força refetch de tudo.
+
+**⚠️ ESTADO DO HOST AGORA — frágil e não-oficial:** `master` com working tree = piloto v2 (uncommitted) + **`vendor/` editado à mão** (OziAssets do `-pkg`, assets do dev-hard, `composer.json` version=beta.2). **Nada disso sobrevive a um `composer install`/`update`** — seria sobrescrito pelo release. É prova-de-conceito, não deploy. Reverter p/ v1 pristina: `git reset --hard origin/master` + `composer install`.
+
+## ⏳ Retomar por aqui (próxima sessão) — PILOTO PASSOU; decisão do corte × beta.2
+
+1. **🎯 DECISÃO CENTRAL (pendência #1, agora madura):** o piloto verde comprova que os 3 fixes (init, lang-OziAssets, auth-i18n) funcionam no host real. Mas **todos vivem só nos repos do plugin + overlays manuais no vendor** — o release `beta.1` não os tem. Caminho limpo: **publicar `2.0.0-beta.2`** (`-pkg`: bump `composer.json` beta.1→beta.2 + tag + push → Packagist) e o host faz `composer update` (dissolve todos os overlays manuais pela via real). OU ir direto ao **corte `2.0.0`** (§7 da sessão 19/07). O `beta.2` já foi "ensaiado" no cache-bust do vendor.
+2. **Fixes commitados/pushados nos repos do plugin** (prontos p/ virar beta.2): init `-pkg 6780a1f`, lang-OziAssets `-pkg 7dd871a`, auth-i18n `-pkg 9299c1e` (+ `-hard`/`-docs`). **Nenhum bug de plugin em aberto.**
+3. **Opcional:** re-testar a **pág.2** (`candidate-list`, filtro de badges) agora que o host roda v2 de verdade — antes só foi testada no `master`/v1. E o bug do HOST `password_confirmation` (§6) fica pro dev do Central RH.
+4. **Corte** (§7 da sessão 19/07): **A1 já feito ✅**, plugin `2.0.0`, host `^2.0`, remover rede v1 (guard → 0), docs → `genesis/`.
+5. Pendência 2 do handoff v1.6 (`vendor/` dos sandboxes em v1) segue aberta — baixa prioridade, decidir junto do corte.
 
 ---
 
